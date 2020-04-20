@@ -1,0 +1,6 @@
+{
+    "token": "botTokenHere",
+    "prefix": "!",
+    "activity": "activityDescriptionHere",
+    "ventChannelId": "idOfChannelHere"
+}
