@@ -23,6 +23,9 @@ app.listen(port, '0.0.0.0', () => {
 const token = process.env.API_KEY || global.config.token;
 const prefix = global.config.prefix;
 
+// Channel variables
+var ventChannel;
+
 // Declare a client object
 const client = new global.Discord.Client();
 
@@ -53,7 +56,25 @@ for(const file of modulesList) {
 client.on('ready', () => {
   console.log(`Logging in as ${client.user.tag}!`);
   client.user.setActivity(global.config.activity);
+  ventChannel = client.channels.get(global.config.ventChannelId);
 });
+
+// Background #vent deletion task.
+//
+// Checks every minute whether the time is 5 AM. If it is, deletes all the messages
+// off of the #vent channel.
+//
+// TODO: Move to "modules" folder as command?
+client.setInterval(function () {
+  let currentTime = new Date();
+  if (currentTime.getHours() == 5 && currentTime.getMinutes() == 0) {
+      do {
+        ventChannel.fetchMessages({ limit: 100 })
+          .then(messages => ventChannel.bulkDelete(messages))
+          .catch(console.error);
+      } while(ventChannel.messages.array().length > 0);
+  }
+}, 60 * 1000);
 
 // When the client receives a message, match the message with a command
 client.on('message', (message) => {
