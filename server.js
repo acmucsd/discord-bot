@@ -67,12 +67,16 @@ client.on('ready', () => {
 // TODO: Move to "modules" folder as command?
 client.setInterval(function () {
   let currentTime = new Date();
-  if (currentTime.getHours() == 5 && currentTime.getMinutes() == 0) {
-      do {
-        ventChannel.fetchMessages({ limit: 100 })
-          .then(messages => ventChannel.bulkDelete(messages))
-          .catch(console.error);
-      } while(ventChannel.messages.array().length > 0);
+  if (currentTime.getHours() == 4 && currentTime.getMinutes() == 30) {
+    ventChannel.send("This channel will be wiped in 30 minutes!")
+  } else if (currentTime.getHours() == 4 && currentTime.getMinutes() == 55) {
+    ventChannel.send("This channel will be wiped in 5 minutes!")
+  } else if (currentTime.getHours() == 5 && currentTime.getMinutes() == 0) {
+    do {
+      ventChannel.fetchMessages({ limit: 100 })        
+        .then(messages => ventChannel.bulkDelete(messages))
+        .catch(console.error);
+    } while(ventChannel.messages.array().length > 0);
   }
 }, 60 * 1000);
 
