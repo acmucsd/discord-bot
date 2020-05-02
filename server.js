@@ -13,11 +13,21 @@ global.Discord = require('discord.js');
 const fs = require('fs');
 const express = require('express');
 const app = express();
+require('heroku-self-ping').default(config.herokuUrl);
 
 const port = process.env.PORT || 3000;
+
+// HTTP request for pinging
+//
+// Used to circumvent Heroku idling policy
+app.get('/ping', function(req, res){
+   res.send("pong");
+});
+
 app.listen(port, '0.0.0.0', () => {
   console.log(`Listening on Port ${port}`);
 });
+
 
 // Retrieve bot settings
 const token = process.env.API_KEY || global.config.token;

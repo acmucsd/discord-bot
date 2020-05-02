@@ -4,5 +4,6 @@
     "activity": "",
     "rebrandlyAPIKey": "",
     "rebrandlyDomainId: "",
-    "ventChannelId": ""
+    "ventChannelId": "",
+    "herokuUrl": ""
 }
