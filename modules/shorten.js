@@ -68,14 +68,15 @@ module.exports = {
           },
           json: true, // Stringify body to JSON
           resolveWithFullResponse: true, // get status code
-          simple: false
+          simple: false // we need this for 403 status code in request
         };
 
         rp(addLinkOptions)
           .then(function (response) {
-            if (response.statusCode == 403) {
+            if (response.statusCode == 403) { // short link already exists
               message.channel.send("A short link with the same name already exists! Try another one.");
             } else {
+              // This makes a nice embed with a clickable URL for quick testing.
               let shortenEmbed = new Discord.RichEmbed()
                 .setTitle("Set shortened link!")
                 .setDescription("Short link: " + response.body.shortUrl)
