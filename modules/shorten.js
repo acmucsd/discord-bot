@@ -26,6 +26,10 @@ module.exports = {
       usage: '!shorten <shortlink> <longurl> [description]',
       description: "Shortens the provided URL into a 'acmurl' link.",
       method: (client, message, args) => {
+        if (!message.member.roles.some(r => r.name === "Board")) {
+          message.channel.send("You must be a Board member to use this command!");
+          return;
+        }
         // URL Validator taken straight from Stack Overflow
         //
         // (https://stackoverflow.com/questions/30931079/validating-a-url-in-node-js)
