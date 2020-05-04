@@ -13,13 +13,12 @@ global.Discord = require('discord.js');
 const fs = require('fs');
 const express = require('express');
 const app = express();
-require('heroku-self-ping').default(config.herokuUrl);
 
 const port = process.env.PORT || 3000;
 
 // HTTP request for pinging
 //
-// Used to circumvent Heroku idling policy
+// Potentially used for keeping bot alive.
 app.get('/ping', function(req, res){
    res.send("pong");
 });
