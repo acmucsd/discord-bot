@@ -13,13 +13,6 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
-// HTTP request for pinging
-//
-// Potentially used for keeping bot alive.
-app.get('/ping', function(req, res){
-   res.send("pong");
-});
-
 app.listen(port, '0.0.0.0', () => {
   console.log(`Listening on Port ${port}`);
 });
