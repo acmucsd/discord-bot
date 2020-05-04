@@ -31,7 +31,7 @@ app.listen(port, '0.0.0.0', () => {
 
 // Retrieve bot settings
 const token = process.env.API_KEY || global.config.token;
-const prefix = global.config.prefix;
+const prefix = process.env.BOT_PREFIX || global.config.prefix;
 
 // Declare a client object
 const client = new global.Discord.Client();
@@ -62,7 +62,7 @@ for(const file of modulesList) {
 // When the client is ready, set its activity and announce that we've logged in
 client.on('ready', () => {
   console.log(`Logging in as ${client.user.tag}!`);
-  client.user.setActivity(global.config.activity);
+  client.user.setActivity(process.env.BOT_ACTIVITY || global.config.activity);
 });
 
 // When the client receives a message, match the message with a command

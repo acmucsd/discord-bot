@@ -59,7 +59,7 @@ module.exports = {
           uri: 'https://api.rebrandly.com/v1/links',
           method: 'POST',
           headers: {
-            'apikey': config.rebrandlyAPIKey,
+            'apikey': process.env.REBRANDLY_API_KEY || config.rebrandlyAPIKey,
             'Content-Type': 'application/json'
           },
           body: {
@@ -67,7 +67,7 @@ module.exports = {
             slashtag: args[0],
             destination: args[1],
             domain: {
-              id: config.rebrandlyDomainId
+              id: process.env.REBRANDLY_DOMAIN_ID || config.rebrandlyDomainId
             }
           },
           json: true, // Stringify body to JSON
