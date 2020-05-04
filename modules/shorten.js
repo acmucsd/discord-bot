@@ -22,14 +22,19 @@ module.exports = {
     // An image representing the module
     thumbnail: '',
 
-    'shorten': {
-      usage: '!shorten <shortlink> <longurl> [description]',
+    'acmurl': {
+      usage: '!acmurl <shortlink> <longurl> [description]',
       description: "Shortens the provided URL into a 'acmurl' link.",
       method: (client, message, args) => {
         if (!message.member.roles.some(r => r.name === "Board")) {
           message.channel.send("You must be a Board member to use this command!");
           return;
         }
+
+        const shortlink = args[0];
+        const longlink = args[1];
+        const description = args[2];
+
         // URL Validator taken straight from Stack Overflow
         //
         // (https://stackoverflow.com/questions/30931079/validating-a-url-in-node-js)
@@ -49,7 +54,7 @@ module.exports = {
         if (args.length < 2) {
           message.channel.send("You must provide both the long link and the short link!");
           return;
-        } else if (!validURL(args[1])) { // check for valid URL
+        } else if (!validURL(longlink)) { // check for valid URL
           message.channel.send("The long link must be a valid URL!");
           return;
         }
@@ -63,9 +68,9 @@ module.exports = {
             'Content-Type': 'application/json'
           },
           body: {
-            title: args[2] || 'Discord Bot - ' + args[0], // optional argument or slashtag
-            slashtag: args[0],
-            destination: args[1],
+            title: description || 'Discord Bot - ' + shortlink, // optional argument or slashtag
+            slashtag: shortlink,
+            destination: longlink,
             domain: {
               id: process.env.REBRANDLY_DOMAIN_ID || config.rebrandlyDomainId
             }
