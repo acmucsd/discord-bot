@@ -5,9 +5,6 @@
  * @author Emily Nguyen
  */
 
-// Global Variables
-global.config = require('./config.json');
-
 // Import modules
 global.Discord = require('discord.js');
 const fs = require('fs');
@@ -15,13 +12,15 @@ const express = require('express');
 const app = express();
 
 const port = process.env.PORT || 3000;
+
 app.listen(port, '0.0.0.0', () => {
   console.log(`Listening on Port ${port}`);
 });
 
+
 // Retrieve bot settings
-const token = process.env.API_KEY || global.config.token;
-const prefix = global.config.prefix;
+const token = process.env.BOT_TOKEN;
+const prefix = process.env.BOT_PREFIX;
 
 // Declare a client object
 const client = new global.Discord.Client();
@@ -52,7 +51,7 @@ for(const file of modulesList) {
 // When the client is ready, set its activity and announce that we've logged in
 client.on('ready', () => {
   console.log(`Logging in as ${client.user.tag}!`);
-  client.user.setActivity(global.config.activity);
+  client.user.setActivity(process.env.BOT_ACTIVITY);
 });
 
 // When the client receives a message, match the message with a command
