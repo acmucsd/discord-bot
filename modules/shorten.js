@@ -32,7 +32,7 @@ module.exports = {
 
         const shortlink = args[0];
         const longlink = args[1];
-        const description = args[2];
+        const description = args.slice(2).join(" ");
 
         // URL Validator taken straight from Stack Overflow
         //
