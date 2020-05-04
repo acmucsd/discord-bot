@@ -4,7 +4,6 @@
  * @author Storm_FireFox1
  */
 
-global.config = require('../config.json')
 const rp = require('request-promise')
 const url = require('url').URL
 const https = require('https')
@@ -64,7 +63,7 @@ module.exports = {
           uri: 'https://api.rebrandly.com/v1/links',
           method: 'POST',
           headers: {
-            'apikey': process.env.REBRANDLY_API_KEY || config.rebrandlyAPIKey,
+            'apikey': process.env.REBRANDLY_API_KEY,
             'Content-Type': 'application/json'
           },
           body: {
@@ -72,7 +71,7 @@ module.exports = {
             slashtag: shortlink,
             destination: longlink,
             domain: {
-              id: process.env.REBRANDLY_DOMAIN_ID || config.rebrandlyDomainId
+              id: process.env.REBRANDLY_DOMAIN_ID
             }
           },
           json: true, // Stringify body to JSON
