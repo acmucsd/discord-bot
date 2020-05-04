@@ -13,7 +13,7 @@ module.exports = {
 
     // List of available commands in the module
     commands: [
-      'shorten'
+      'acmurl'
     ],
 
     // A description of this module
@@ -95,7 +95,7 @@ module.exports = {
             }
           })
           .catch(function (err) {
-            message.channel.send("Error processing API request to Rebrandly! Check console logs.");
+            message.channel.send("Error processing API request to Rebrandly! Cause of error:\n```\n" + err.cause + "\n```");
             console.error(err);
           });
       }
