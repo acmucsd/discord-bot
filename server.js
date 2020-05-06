@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 /**
  * @file server.js
  * @description This file manages the backend for Diamond. It takes in commands
@@ -9,11 +10,13 @@
 global.Discord = require('discord.js');
 const fs = require('fs');
 const express = require('express');
+
 const app = express();
 
 const port = process.env.PORT || 3000;
 
 app.listen(port, '0.0.0.0', () => {
+  // eslint-disable-next-line no-console
   console.log(`Listening on Port ${port}`);
 });
 
@@ -30,15 +33,19 @@ client.commands = {};
 client.aliases = {};
 client.helpList = [];
 const modulesList = fs.readdirSync('./modules');
-for(const file of modulesList) {
-  const module = require(`./modules/${file}`);
-  let commandsList = [];
-  for(let i = 0; i < module.commands.length; i++) {
-    let command = module.commands[i];
+// eslint-disable-next-line no-restricted-syntax
+for (const file of modulesList) {
+  const filePath = `./modules/${file}`;
+  // eslint-disable-next-line import/no-dynamic-require
+  const module = require(filePath);
+  const commandsList = [];
+  for (let i = 0; i < module.commands.length; i += 1) {
+    const command = module.commands[i];
 
     // Check for aliases
-    if(module[command].aliases) {
-      for(let alias of module[command].aliases) {
+    if (module[command].aliases) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const alias of module[command].aliases) {
         client.aliases[alias] = module[command];
       }
     }
@@ -50,36 +57,35 @@ for(const file of modulesList) {
 
 // When the client is ready, set its activity and announce that we've logged in
 client.on('ready', () => {
+  // eslint-disable-next-line no-console
   console.log(`Logging in as ${client.user.tag}!`);
   client.user.setActivity(process.env.BOT_ACTIVITY);
 });
 
 // When the client receives a message, match the message with a command
 client.on('message', (message) => {
-  if(!message.author.bot) {
-    let com, args;
-    let msg = message.content;
+  if (!message.author.bot) {
+    let com;
+    let args;
+    const msg = message.content;
 
     // Checks if the message starts with the prefix and if so, isolate command and arguments
-    if(msg.startsWith(prefix)) {
+    if (msg.startsWith(prefix)) {
       com = msg.split(' ')[0].substring(prefix.length);
       args = msg.split(' ').slice(1);
-    }
-
-    // Checks if bot is mentioned and if so, isolate command and arguments
-    else if(message.isMentioned(client.user)) {
-      com = msg.split(' ')[1];
+    } else if (message.isMentioned(client.user)) {
+      [, com] = msg.split(' ');
       args = msg.split(' ').slice(2);
-      if(!com) {
+      if (!com) {
         message.channel.send('hello');
         return;
       }
     }
 
     // If the command exists, find it in the collection and run it
-    if(com) {
-      let command = client.commands[com] || client.aliases[com];
-      if(command) {
+    if (com) {
+      const command = client.commands[com] || client.aliases[com];
+      if (command) {
         command.method(client, message, args);
       }
     }

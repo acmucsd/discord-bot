@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const rp = require('request-promise');
+const discord = require('discord.js');
 
 module.exports = {
 
@@ -16,7 +17,7 @@ module.exports = {
     'echo',
     'embed',
     'file',
-    'follow'
+    'follow',
   ],
 
   // A description of this module
@@ -25,31 +26,30 @@ module.exports = {
   // An image representing this module
   thumbnail: '',
 
-  'echo': {
+  echo: {
     usage: '!echo <message>',
     description: 'The bot repeats your message.',
     method: (client, message, args) => {
-      const content = message.content;
-      if(!args) {
+      const { content } = message;
+      if (!args) {
         message.reply('Did you want me to say something?');
-      }
-      else {
+      } else {
         message.channel.send(content.slice(content.indexOf(' ')));
       }
-    }
+    },
   },
 
-  'embed': {
+  embed: {
     usage: '!embed',
     description: 'Creates an embed with a title / description.',
-    method: async (client, message, args) => {
+    method: async (client, message) => {
       // BUG: Repeated call of this command in the 15 minute interval results in
       // repeated execution
-      const filter = m => m.author.id === message.author.id;
-      const conditions = {maxMatches: 1, time: 15000, errors: ['time']};
+      const filter = (m) => m.author.id === message.author.id;
+      const conditions = { maxMatches: 1, time: 15000, errors: ['time'] };
       const deleteMessage = (msg) => {
         msg.delete(10000);
-      }
+      };
       message.reply('What would you like the title to be?')
         .then(deleteMessage);
       message.channel.awaitMessages(filter, conditions)
@@ -58,7 +58,7 @@ module.exports = {
             .then(deleteMessage);
           message.channel.awaitMessages(filter, conditions)
             .then((description) => {
-              let embed = new Discord.RichEmbed()
+              const embed = new discord.RichEmbed()
                 .setTitle(title.first().content)
                 .setDescription(description.first().content)
                 .setColor('0x3498DB');
@@ -77,19 +77,19 @@ module.exports = {
             .then(deleteMessage);
         });
       deleteMessage(message);
-    }
+    },
   },
 
-  'file': {
+  file: {
     usage: '!file *Also, attach a file*',
     description: 'Reuploads a file that the user sent',
-    method: (client, message, args) => {
+    method: (client, message) => {
       // TODO - Make this work with multiple file attachments
       // Use message.attachments.forEach
       const attachment = message.attachments.first();
       if (attachment) {
-        let req = rp.get(attachment.url);
-        req.on('error', console.error)
+        const req = rp.get(attachment.url);
+        req.on('error', message.channel.send('Error occured!'));
         req.pipe(fs.createWriteStream(`./cache/${attachment.filename}`));
         req
           .then(() => {
@@ -97,29 +97,29 @@ module.exports = {
               files.forEach((file) => {
                 message.channel.send({
                   files: [
-                    `./cache/${file}`
-                  ]
+                    `./cache/${file}`,
+                  ],
                 })
-                .then(() => {
-                  fs.unlink(`./cache/${file}`);
-                });
+                  .then(() => {
+                    fs.unlink(`./cache/${file}`);
+                  });
               });
             });
           })
           .then(() => {
             message.delete();
           });
-      };
-    }
+      }
+    },
   },
 
-  'follow': {
+  follow: {
     usage: '!follow',
     description: 'Sends ACM\'s social media info.',
-    method: (client, message, args) => {
+    method: (client, message) => {
       message.channel.send({
         files: [
-          './assets/images/follow.png'
+          './assets/images/follow.png',
         ],
         embed: {
           color: 3447003,
@@ -127,36 +127,36 @@ module.exports = {
             {
               name: '**<:web:598418888899821589>   Website**',
               value: '**Coming Soon**',
-              inline: true
+              inline: true,
             },
             {
               name: '**<:cal:598416977840832532>   Calendar**',
               value: '**Coming Soon**',
-              inline: true
+              inline: true,
             },
             {
               name: '**<:fb:598418876157394975>   Facebook**',
               value: '**Coming Soon**',
-              inline: true
+              inline: true,
             },
             {
               name: '**<:ig:598406604827656202>   Instagram**',
               value: '**[acm.ucsd](https://www.instagram.com/acm.ucsd/)**',
-              inline: true
+              inline: true,
             },
             {
               name: '**<:linkedin:598412901665210378>   LinkedIn**',
               value: '**[ACM at UC San Diego](https://www.linkedin.com/company/19158996/)**',
-              inline: true
+              inline: true,
             },
             {
               name: '**<:github:598411364872093729>   GitHub**',
               value: '**[acmucsd](https://github.com/acmucsd)**',
-              inline: true
-            }
-          ]
-        }
+              inline: true,
+            },
+          ],
+        },
       });
-    }
-  }
-}
+    },
+  },
+};

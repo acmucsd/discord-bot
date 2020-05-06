@@ -4,6 +4,7 @@
   "description": "ACM at UCSD's Discord Bot",
   "main": "server.js",
   "scripts": {
+    "lint": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
@@ -22,5 +23,10 @@
     "express": "^4.17.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2"
   }
 }
