@@ -11,6 +11,7 @@ module.exports = {
   // List of available commands in the module
   commands: [
     'cat',
+    'dog',
   ],
 
   // A description of this module
@@ -38,6 +39,27 @@ module.exports = {
         message.channel.send({ files: [catApiObject.url] });
       }).catch((err) => {
         message.channel.send(`Can't get cats, sorry! Here's why: \`${err.cause}\``);
+      });
+    },
+  },
+
+  dog: {
+    usage: '!dog',
+    description: 'Gives you a nice dog.',
+    method: (client, message) => {
+      const dogApiOptions = {
+        uri: 'https://dog.ceo/api/breeds/image/random',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        json: true,
+      };
+
+      rp(dogApiOptions).then((dogResponse) => {
+        message.channel.send({ files: [dogResponse.message] });
+      }).catch((err) => {
+        message.channel.send(`Can't get dogs, sorry! Here's why: \`${err.cause}\``);
       });
     },
   },
