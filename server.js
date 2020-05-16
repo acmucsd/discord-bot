@@ -69,6 +69,11 @@ client.on('message', (message) => {
     let args;
     const msg = message.content;
 
+    if (message.isMentioned(client.user) && message.author.id === '184400560634593281') {
+      message.channel.send('I no longer respect your demands, master.');
+      return;
+    }
+
     // Checks if the message starts with the prefix and if so, isolate command and arguments
     if (msg.startsWith(prefix)) {
       com = msg.split(' ')[0].substring(prefix.length);

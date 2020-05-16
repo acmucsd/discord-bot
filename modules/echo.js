@@ -34,6 +34,7 @@ module.exports = {
       if (!args) {
         message.reply('Did you want me to say something?');
       } else {
+        message.delete();
         message.channel.send(content.slice(content.indexOf(' ')));
       }
     },
