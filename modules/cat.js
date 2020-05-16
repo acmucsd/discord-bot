@@ -12,6 +12,7 @@ module.exports = {
   commands: [
     'cat',
     'dog',
+    'bread',
   ],
 
   // A description of this module
@@ -19,6 +20,27 @@ module.exports = {
 
   // An image representing the module
   thumbnail: '',
+
+  bread: {
+    usage: '!bread',
+    description: 'Gives you that good bread.',
+    method: (client, message) => {
+      const breadApiOptions = {
+        uri: 'https://api.unsplash.com/photos/random?query=bread',
+        method: 'GET',
+        headers: {
+          Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}`,
+        },
+        json: true,
+      };
+
+      rp(breadApiOptions).then((breadResponse) => {
+        message.channel.send({ files: [`${breadResponse.urls.full}.jpg`] });
+      }).catch((err) => {
+        message.channel.send(`Can't get that bread, sorry! Here's why: \`${err.cause}\``);
+      });
+    },
+  },
 
   cat: {
     usage: '!cat',
