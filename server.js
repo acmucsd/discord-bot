@@ -69,8 +69,12 @@ client.on('message', (message) => {
     let args;
     const msg = message.content;
 
-    if (message.isMentioned(client.user) && message.author.id === '184400560634593281') {
-      message.channel.send('I no longer respect your demands, master.');
+    if (message.isMentioned(client.user)) {
+      if (message.author.id === '184400560634593281') {
+        message.channel.send('I no longer respect your demands, master.');
+      } else {
+        message.channel.send(':pleading_face: :point_right: :point_left:');
+      }
       return;
     }
 
@@ -82,7 +86,7 @@ client.on('message', (message) => {
       [, com] = msg.split(' ');
       args = msg.split(' ').slice(2);
       if (!com) {
-        message.channel.send('hello');
+        message.channel.send('Hello!');
         return;
       }
     }
