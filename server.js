@@ -11,9 +11,12 @@ global.Discord = require('discord.js');
 const fs = require('fs');
 const express = require('express');
 
+let commandCount = {};
+
 const app = express();
 
 const port = process.env.PORT || 3000;
+const commandCountFileName = process.env.COMMAND_COUNT_FILENAME;
 
 app.listen(port, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
@@ -32,6 +35,11 @@ const client = new global.Discord.Client();
 client.commands = {};
 client.aliases = {};
 client.helpList = [];
+if (fs.existsSync(commandCountFileName)) {
+  commandCount = JSON.parse(fs.readFileSync(commandCountFileName));
+} else if (process.env.COMMAND_COUNT_ENABLED) {
+  fs.writeFileSync(commandCountFileName, '{}', 'utf8');
+}
 const modulesList = fs.readdirSync('./modules');
 // eslint-disable-next-line no-restricted-syntax
 for (const file of modulesList) {
@@ -51,6 +59,9 @@ for (const file of modulesList) {
     }
     commandsList.push([command, module[command].usage]);
     client.commands[command] = module[command];
+    if (!commandCount[command]) {
+      commandCount[command] = 0;
+    }
   }
   client.helpList.push([file, commandsList, module.description, module.thumbnail]);
 }
@@ -96,6 +107,10 @@ client.on('message', (message) => {
       const command = client.commands[com] || client.aliases[com];
       if (command) {
         command.method(client, message, args);
+        commandCount[com] += 1;
+        if (process.env.COMMAND_COUNT_ENABLED) {
+          fs.writeFileSync(commandCountFileName, JSON.stringify(commandCount), 'utf8');
+        }
       }
     }
   }
