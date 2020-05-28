@@ -31,7 +31,8 @@ module.exports = {
             bruhDispatcher.on('end', () => {
               connection.disconnect();
             });
-          });
+          })
+	  .catch((err) => message.channel.send(`Welp, I can't bruh now. Here's why: ${err}`));
       } else {
         message.reply('You need to join a voice channel first!');
       }
@@ -42,13 +43,12 @@ module.exports = {
     usage: '!jeff',
     description: 'Links you to a thing.',
     method: (client, message) => {
-      const jeffEmbed = new Discord.MessageEmbed()
+      const jeffEmbed = new Discord.RichEmbed()
         .setColor('#fe5000')
         .setTitle('Jeff?')
         .setURL('https://soundcloud.com/derek-d2/sets/edc-las-vegas-virtual-rave-a-thon-2020')
         .setDescription('EDC Las Vega Virtual Rave-A-Thon 2020')
         .setThumbnail('https://i1.sndcdn.com/artworks-wkul4OOkahc0ChoU-xQS6ow-t500x500.jpg');
-
       message.channel.send(jeffEmbed);
     },
   },
