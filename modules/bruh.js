@@ -12,6 +12,7 @@ module.exports = {
   commands: [
     'bruh',
     'jeff',
+    'isleaguetime',
   ],
 
   // A description of this module
@@ -32,7 +33,7 @@ module.exports = {
               connection.disconnect();
             });
           })
-	  .catch((err) => message.channel.send(`Welp, I can't bruh now. Here's why: ${err}`));
+	        .catch((err) => message.channel.send(`Welp, I can't bruh now. Here's why: ${err}`));
       } else {
         message.reply('You need to join a voice channel first!');
       }
@@ -50,6 +51,19 @@ module.exports = {
         .setDescription('EDC Las Vega Virtual Rave-A-Thon 2020')
         .setThumbnail('https://i1.sndcdn.com/artworks-wkul4OOkahc0ChoU-xQS6ow-t500x500.jpg');
       message.channel.send(jeffEmbed);
+    },
+  },
+
+  isleaguetime: {
+    usage: '!isleaguetime',
+    description: 'Checks whether it\'s League time.',
+    method: (client, message) => {
+      const currentTime = new Date().getHours();
+      if (currentTime >= 0 && currentTime <= 6) {
+        message.channel.send('True.');
+      } else {
+        message.channel.send('False.');
+      }
     },
   },
 };
