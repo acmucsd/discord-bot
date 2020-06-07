@@ -33,7 +33,7 @@ module.exports = {
               connection.disconnect();
             });
           })
-	        .catch((err) => message.channel.send(`Welp, I can't bruh now. Here's why: ${err}`));
+          .catch((err) => message.channel.send(`Welp, I can't bruh now. Here's why: ${err}`));
       } else {
         message.reply('You need to join a voice channel first!');
       }
@@ -58,7 +58,7 @@ module.exports = {
     usage: '!isleaguetime',
     description: 'Checks whether it\'s League time.',
     method: (client, message) => {
-      const currentTime = new Date().getHours();
+      const currentTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })).getHours();
       if (currentTime >= 0 && currentTime <= 6) {
         message.channel.send('True.');
       } else {
