@@ -35,7 +35,7 @@ module.exports = {
       };
 
       rp(breadApiOptions).then((breadResponse) => {
-        message.channel.send({ files: [`${breadResponse.urls.full}.jpg`] });
+        message.channel.send({ files: [{ attachment: `${breadResponse.urls.full}.jpg`, name: 'bread.jpg' }] });
       }).catch((err) => {
         message.channel.send(`Can't get that bread, sorry! Here's why: \`${err.cause}\``);
       });

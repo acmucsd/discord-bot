@@ -25,11 +25,11 @@ module.exports = {
     usage: '!bruh',
     description: "Bruh's all over a voice channel.",
     method: (client, message) => {
-      if (message.member.voiceChannel) {
-        message.member.voiceChannel.join()
+      if (message.member.voice.channel != null) {
+        message.member.voice.channel.join()
           .then((connection) => { // Connection is an instance of VoiceConnection
-            const bruhDispatcher = connection.playFile('./assets/bruh.m4a');
-            bruhDispatcher.on('end', () => {
+            const bruhDispatcher = connection.play('./assets/bruh.m4a');
+            bruhDispatcher.on('finish', () => {
               connection.disconnect();
             });
           })
@@ -44,7 +44,7 @@ module.exports = {
     usage: '!jeff',
     description: 'Links you to a thing.',
     method: (client, message) => {
-      const jeffEmbed = new Discord.RichEmbed()
+      const jeffEmbed = new Discord.MessageEmbed()
         .setColor('#fe5000')
         .setTitle('Jeff?')
         .setURL('https://soundcloud.com/derek-d2/sets/edc-las-vegas-virtual-rave-a-thon-2020')
@@ -59,7 +59,9 @@ module.exports = {
     description: 'Checks whether it\'s League time.',
     method: (client, message) => {
       const currentTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })).getHours();
-      if (currentTime >= 0 && currentTime <= 6) {
+      if (currentTime >= 22) {
+        message.channel.send('True.');
+      } else if (currentTime >= 0 && currentTime <= 6) {
         message.channel.send('True.');
       } else {
         message.channel.send('False.');

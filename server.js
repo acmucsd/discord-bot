@@ -38,7 +38,6 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`Listening on Port ${port}`);
 });
 
-
 // Retrieve bot settings
 const token = process.env.BOT_TOKEN;
 const prefix = process.env.BOT_PREFIX;
@@ -87,7 +86,7 @@ client.on('message', (message) => {
     let args;
     const msg = message.content;
 
-    if (message.isMentioned(client.user)) {
+    if (message.mentions.users.some((user) => user.id === client.user.id)) {
       if (message.author.id === '184400560634593281') {
         message.channel.send('I no longer respect your demands, master.');
       } else {
@@ -100,7 +99,7 @@ client.on('message', (message) => {
     if (msg.startsWith(prefix)) {
       com = msg.split(' ')[0].substring(prefix.length);
       args = msg.split(' ').slice(1);
-    } else if (message.isMentioned(client.user)) {
+    } else if (message.mentions.users.some((user) => user.id === client.user.id)) {
       [, com] = msg.split(' ');
       args = msg.split(' ').slice(2);
       if (!com) {

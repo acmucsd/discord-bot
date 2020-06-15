@@ -111,7 +111,7 @@ module.exports = {
                 resolveWithFullResponse: true, // get status code
               };
               rp(updateLinkOptions).then((response3) => {
-                const shortenEmbed = new Discord.RichEmbed()
+                const shortenEmbed = new Discord.MessageEmbed()
                   .setTitle('Updated shortened link!')
                   .setDescription(`Short link: ${response3.body.shortUrl}\nPreviously shortened link: ${response2.body[0].destination}`)
                   .setURL(`https://${response3.body.shortUrl}`)
@@ -121,7 +121,7 @@ module.exports = {
             });
           } else {
             // This makes a nice embed with a clickable URL for quick testing.
-            const shortenEmbed = new Discord.RichEmbed()
+            const shortenEmbed = new Discord.MessageEmbed()
               .setTitle('Set shortened link!')
               .setDescription(`Short link: ${response.body.shortUrl}`)
               .setURL(`https://${response.body.shortUrl}`)

@@ -59,7 +59,7 @@ module.exports = {
             .then(deleteMessage);
           message.channel.awaitMessages(filter, conditions)
             .then((description) => {
-              const embed = new discord.RichEmbed()
+              const embed = new discord.MessageEmbed()
                 .setTitle(title.first().content)
                 .setDescription(description.first().content)
                 .setColor('0x3498DB');
