@@ -16,6 +16,7 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 const commandCountFileName = process.env.COMMAND_COUNT_FILENAME;
+const cringeLogFileName = process.env.CRINGE_REACT_FILENAME;
 
 /**
  * Logger for commands event.
@@ -33,6 +34,12 @@ const commandLogger = createLogger({
   transports: [new transports.File({ filename: commandCountFileName })],
 });
 
+const cringeLogger = createLogger({
+  level: 'info',
+  format: format.printf((info) => `${info.message}`),
+  transports: [new transports.File({ filename: cringeLogFileName })],
+});
+
 app.listen(port, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`Listening on Port ${port}`);
@@ -43,7 +50,7 @@ const token = process.env.BOT_TOKEN;
 const prefix = process.env.BOT_PREFIX;
 
 // Declare a client object
-const client = new global.Discord.Client();
+const client = new global.Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 // Load commands into a commands map
 client.commands = {};
@@ -123,6 +130,25 @@ client.on('message', (message) => {
         command.method(client, message, args);
       }
     }
+  }
+});
+
+client.on('messageReactionAdd', async (reaction) => {
+  // When we receive a reaction we check if the reaction is partial or not
+  if (reaction.partial) {
+    try {
+      await reaction.fetch();
+    } catch (error) {
+      // Return as `reaction.message.author` may be undefined/null
+      console.log('Something went wrong when fetching the message: ', error);
+    }
+  }
+
+  if (reaction.emoji.id === process.env.CRINGE_REACT_EMOTE_ID) {
+    cringeLogger.log({
+      level: 'info',
+      message: reaction.message.content,
+    });
   }
 });
 
