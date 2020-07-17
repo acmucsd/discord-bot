@@ -10,10 +10,26 @@ const fs = require('fs');
 const rp = require('request-promise');
 const discord = require('discord.js');
 
+const dadJokeCallback = (client, message) => {
+  // check previous message before this one first
+  message.channel.messages.fetch({ limit: 2 })
+    .then((lastTwoMessages) => {
+      const dadJokeMessage = lastTwoMessages.last();
+      if (dadJokeMessage.content.match(/^i('m| am| m)\w*/i)) {
+        message.delete();
+        message.channel.send(`Hi${dadJokeMessage.content.replace(/^i('m| am| m)\w*/i, '')}`);
+      } else {
+        message.channel.send(`Eh? I don't see it. Bad ${message.author}`);
+      }
+    })
+    .catch(console.error);
+};
+
 module.exports = {
 
   // A list of available commands
   commands: [
+    'dadjoke',
     'echo',
     'embed',
     'file',
@@ -25,6 +41,18 @@ module.exports = {
 
   // An image representing this module
   thumbnail: '',
+
+  dadjoke: {
+    usage: '!dadjoke',
+    description: 'Check for dad joke potential in the previous comment. If there is any, call it out. If not, chastize the command caller for thinking there was a dad joke in the first place.',
+    method: dadJokeCallback,
+  },
+
+  ivy: {
+    usage: '!ivy',
+    description: 'Alias command for "dadjoke".',
+    method: dadJokeCallback,
+  },
 
   echo: {
     usage: '!echo <message>',
