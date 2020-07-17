@@ -31,6 +31,7 @@ module.exports = {
   commands: [
     'dadjoke',
     'echo',
+    'ivy',
     'embed',
     'file',
     'follow',
