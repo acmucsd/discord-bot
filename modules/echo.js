@@ -75,9 +75,9 @@ module.exports = {
       // BUG: Repeated call of this command in the 15 minute interval results in
       // repeated execution
       const filter = (m) => m.author.id === message.author.id;
-      const conditions = { maxMatches: 1, time: 15000, errors: ['time'] };
+      const conditions = { max: 1, time: 15000, errors: ['time'] };
       const deleteMessage = (msg) => {
-        msg.delete(10000);
+        msg.delete({ timeout: 10000});
       };
       message.reply('What would you like the title to be?')
         .then(deleteMessage);
