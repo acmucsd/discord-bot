@@ -78,7 +78,7 @@ module.exports = {
       const filter = (m) => m.author.id === message.author.id;
       const conditions = { max: 1, time: 15000, errors: ['time'] };
       const deleteMessage = (msg) => {
-        msg.delete({ timeout: 10000});
+        msg.delete({ timeout: 10000 });
       };
       message.reply('What would you like the title to be?')
         .then(deleteMessage);
