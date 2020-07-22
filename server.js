@@ -73,7 +73,7 @@ for (const file of modulesList) {
         client.aliases[alias] = module[command];
       }
     }
-    commandsList.push([command, module[command].usage]);
+    commandsList.push([command, module[command].usage, module[command].description]);
     client.commands[command] = module[command];
   }
   client.helpList.push([file, commandsList, module.description, module.thumbnail]);
@@ -85,6 +85,49 @@ client.on('ready', () => {
   console.log(`Logging in as ${client.user.tag}!`);
   client.user.setActivity(process.env.BOT_ACTIVITY);
 });
+
+// --- Help message generation ---
+// There's no point in re-running this sequence of code constantly, as the help command
+// will be the same across a bot's lifetime (no live file reloads).
+//
+// Iterate through client.helpList and create help message description.
+// helpList is array of arrays, where each internal array has:
+// [0] => filename of module
+// [1] => list of commands from module (command name, usage and description)
+// [2] => description of module
+// [3] => thumbnail of module
+let helpMessageBuilder = `All commands are prefixed with \`${prefix}\`.\n\n`;
+client.commandHelps = {};
+client.helpList.forEach((moduleHelp) => {
+  // remove file extension from module filename to get module name
+  // regex is useful!
+  const moduleName = moduleHelp[0].replace(/\.[^/.]+$/, '');
+  helpMessageBuilder += `**"${moduleName}" Module**\n\n${moduleHelp[2]}\n\n`;
+  moduleHelp[1].forEach((commandHelp) => {
+    helpMessageBuilder += `\`${commandHelp[0]}\`: ${commandHelp[2]}\n`;
+    client.commandHelps[commandHelp[0]] = {
+      usage: commandHelp[1],
+      description: commandHelp[2],
+    };
+  });
+  helpMessageBuilder += '\n';
+});
+const HELP_MESSAGE = helpMessageBuilder;
+
+/**
+ * Gets a string defining the help message for a specific command.
+ *
+ * If the command doesn't exist, it returns an empty string.
+ */
+const getCommandHelp = (commandName) => {
+  const commandList = Object.keys(client.commandHelps);
+  for (let i = 0; i < commandList.length; i += 1) {
+    if (commandList[i] === commandName) {
+      return `Usage:\`${client.commandHelps[commandList[i]].usage}\`\n\n ${client.commandHelps[commandList[i]].description}`;
+    }
+  }
+  return '';
+};
 
 // When the client receives a message, match the message with a command
 client.on('message', (message) => {
@@ -117,17 +160,38 @@ client.on('message', (message) => {
 
     // If the command exists, find it in the collection and run it
     if (com) {
-      const command = client.commands[com] || client.aliases[com];
-      if (command) {
-        if (process.env.COMMAND_COUNT_ENABLED) {
-          commandLogger.log({
-            level: 'info',
-            command: com,
-            author: message.author.tag,
-            channel: message.channel.name,
-          });
+      // If it's "help", we need to see if it's either for ALL commands
+      // or only a specific one.
+      if (com === 'help' && args.length === 0) {
+        const helpEmbed = new global.Discord.MessageEmbed()
+          .setTitle('❓ Available commands')
+          .setDescription(HELP_MESSAGE)
+          .setColor('0x3498DB');
+        message.channel.send(helpEmbed);
+      } else if (com === 'help' && args.length > 0) {
+        const commandHelpMessage = getCommandHelp(args[0]);
+        if (commandHelpMessage === '') {
+          message.channel.send('This commmand does not exist!');
+        } else {
+          const helpCommandEmbed = new global.Discord.MessageEmbed()
+            .setTitle(`❓ Help for \`${args[0]}\``)
+            .setDescription(commandHelpMessage)
+            .setColor('0x3498DB');
+          message.channel.send(helpCommandEmbed);
         }
-        command.method(client, message, args);
+      } else {
+        const command = client.commands[com] || client.aliases[com];
+        if (command) {
+          if (process.env.COMMAND_COUNT_ENABLED) {
+            commandLogger.log({
+              level: 'info',
+              command: com,
+              author: message.author.tag,
+              channel: message.channel.name,
+            });
+          }
+          command.method(client, message, args);
+        }
       }
     }
   }
