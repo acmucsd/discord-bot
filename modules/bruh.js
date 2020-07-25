@@ -58,8 +58,14 @@ module.exports = {
     usage: '!isleaguetime',
     description: 'Checks whether it\'s League time.',
     method: (client, message) => {
-      const currentTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })).getHours();
-      if (currentTime >= 22) {
+      const timeNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+      const currentTime = timeNow.getHours();
+      const currentYear = timeNow.getFullYear();
+      const summerFirstDay = Date.parse(`06/20/${currentYear}`);
+      const summerLastDay = Date.parse(`09/20/${currentYear}`);
+      if (summerFirstDay <= timeNow && timeNow <= summerLastDay) {
+        message.channel.send('True.');
+      } else if (currentTime >= 22) {
         message.channel.send('True.');
       } else if (currentTime >= 0 && currentTime <= 6) {
         message.channel.send('True.');
