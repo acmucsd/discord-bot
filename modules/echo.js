@@ -15,10 +15,10 @@ const dadJokeCallback = (client, message) => {
   message.channel.messages.fetch({ limit: 2 })
     .then((lastTwoMessages) => {
       const dadJokeMessage = lastTwoMessages.last();
-      if (dadJokeMessage.content.match(/i('m| am| m|m) .*/i)) {
+      if (dadJokeMessage.content.match(/i('m|’m| am| m|m) .*/i)) {
         message.delete();
-        const extractedMessage = dadJokeMessage.content.match(/i('m| am| m|m) .*/i);
-        message.channel.send(`Hi ${extractedMessage[0].replace(/i('m| am| m|m) /i, '')}`);
+        const extractedMessage = dadJokeMessage.content.match(/i('m|’m| am| m|m) .*/i);
+        message.channel.send(`Hi ${extractedMessage[0].replace(/i('m|’m| am| m|m) /i, '')}`);
       } else {
         message.channel.send(`Eh? I don't see it. Bad ${message.author}`);
       }
