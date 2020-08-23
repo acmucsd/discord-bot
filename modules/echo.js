@@ -30,9 +30,7 @@ module.exports = {
 
   // A list of available commands
   commands: [
-    'dadjoke',
     'echo',
-    'ivy',
     'embed',
     'file',
     'follow',
@@ -43,18 +41,6 @@ module.exports = {
 
   // An image representing this module
   thumbnail: '',
-
-  dadjoke: {
-    usage: '!dadjoke',
-    description: 'Check for dad joke potential in the previous comment. If there is any, call it out. If not, chastize the command caller for thinking there was a dad joke in the first place.',
-    method: dadJokeCallback,
-  },
-
-  ivy: {
-    usage: '!ivy',
-    description: 'Alias command for "dadjoke".',
-    method: dadJokeCallback,
-  },
 
   echo: {
     usage: '!echo <message>',
