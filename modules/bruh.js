@@ -10,7 +10,6 @@ module.exports = {
 
   // List of available commands in the module
   commands: [
-    'bruh',
     'jeff',
     'isleaguetime',
   ],
@@ -20,25 +19,6 @@ module.exports = {
 
   // An image representing the module
   thumbnail: '',
-
-  bruh: {
-    usage: '!bruh',
-    description: "Bruh's all over a voice channel.",
-    method: (client, message) => {
-      if (message.member.voice.channel != null) {
-        message.member.voice.channel.join()
-          .then((connection) => { // Connection is an instance of VoiceConnection
-            const bruhDispatcher = connection.play('./assets/bruh.m4a');
-            bruhDispatcher.on('finish', () => {
-              connection.disconnect();
-            });
-          })
-          .catch((err) => message.channel.send(`Welp, I can't bruh now. Here's why: ${err}`));
-      } else {
-        message.reply('You need to join a voice channel first!');
-      }
-    },
-  },
 
   jeff: {
     usage: '!jeff',
