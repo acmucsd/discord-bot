@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/acmucsd/discord-bot#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
     "discord.js": "^12.2.0",
     "express": "^4.17.1",
     "request": "^2.88.2",
