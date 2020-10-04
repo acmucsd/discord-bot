@@ -1,17 +1,12 @@
 /**
-* @file bruh.js
-* @description Module for bruh-related commands.
-* @author Storm_FireFox1
-*/
-
-const Discord = require('discord.js');
+ * @file bruh.js
+ * @description Module for bruh-related commands.
+ * @author Storm_FireFox1
+ */
 
 module.exports = {
-
   // List of available commands in the module
-  commands: [
-    'isleaguetime',
-  ],
+  commands: ['isleaguetime'],
 
   // A description of this module
   description: 'Bruh.',
@@ -21,9 +16,11 @@ module.exports = {
 
   isleaguetime: {
     usage: '!isleaguetime',
-    description: 'Checks whether it\'s League time.',
+    description: "Checks whether it's League time.",
     method: (client, message) => {
-      const timeNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+      const timeNow = new Date(
+        new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
+      );
       const currentTime = timeNow.getHours();
       const currentYear = timeNow.getFullYear();
       const summerFirstDay = Date.parse(`06/20/${currentYear}`);
