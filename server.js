@@ -11,6 +11,7 @@ global.Discord = require('discord.js');
 const fs = require('fs');
 const express = require('express');
 const { createLogger, format, transports } = require('winston');
+const Cron = require('cron').CronJob;
 
 const app = express();
 
@@ -30,7 +31,9 @@ const cringeLogFileName = process.env.CRINGE_REACT_FILENAME;
  */
 const commandLogger = createLogger({
   level: 'info',
-  format: format.printf((info) => `${Date.now()}:${info.command}:${info.author}:${info.channel}`),
+  format: format.printf(
+    (info) => `${Date.now()}:${info.command}:${info.author}:${info.channel}`,
+  ),
   transports: [new transports.File({ filename: commandCountFileName })],
 });
 
@@ -50,7 +53,9 @@ const token = process.env.BOT_TOKEN;
 const prefix = process.env.BOT_PREFIX;
 
 // Declare a client object
-const client = new global.Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+const client = new global.Discord.Client({
+  partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+});
 
 // Load commands into a commands map
 client.commands = {};
@@ -73,10 +78,19 @@ for (const file of modulesList) {
         client.aliases[alias] = module[command];
       }
     }
-    commandsList.push([command, module[command].usage, module[command].description]);
+    commandsList.push([
+      command,
+      module[command].usage,
+      module[command].description,
+    ]);
     client.commands[command] = module[command];
   }
-  client.helpList.push([file, commandsList, module.description, module.thumbnail]);
+  client.helpList.push([
+    file,
+    commandsList,
+    module.description,
+    module.thumbnail,
+  ]);
 }
 
 // When the client is ready, set its activity and announce that we've logged in
@@ -85,6 +99,39 @@ client.on('ready', () => {
   console.log(`Logging in as ${client.user.tag}!`);
   client.user.setActivity(process.env.BOT_ACTIVITY);
 });
+
+const openLeetcodeCron = new Cron('0 50 17 * * 0', () => {
+  client.channels
+    .fetch(process.env.LEETCODE_CATEGORY_ID)
+    .then((leetcodeCategory) => {
+      leetcodeCategory.updateOverwrite(leetcodeCategory.guild.roles.everyone, {
+        VIEW_CHANNEL: true,
+        SEND_MESSAGES: true,
+      });
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.log('Could not find Leetcode category: ', err);
+    });
+});
+
+const closeLeetcodeCron = new Cron('0 25 16 * * 0', () => {
+  client.channels
+    .fetch(process.env.LEETCODE_CATEGORY_ID)
+    .then((leetcodeCategory) => {
+      leetcodeCategory.updateOverwrite(leetcodeCategory.guild.roles.everyone, {
+        VIEW_CHANNEL: false,
+        SEND_MESSAGES: false,
+      });
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.log('Could not find Leetcode category: ', err);
+    });
+});
+
+openLeetcodeCron.start();
+closeLeetcodeCron.start();
 
 // --- Help message generation ---
 // There's no point in re-running this sequence of code constantly, as the help command
@@ -123,7 +170,9 @@ const getCommandHelp = (commandName) => {
   const commandList = Object.keys(client.commandHelps);
   for (let i = 0; i < commandList.length; i += 1) {
     if (commandList[i] === commandName) {
-      return `Usage:\`${client.commandHelps[commandList[i]].usage}\`\n\n ${client.commandHelps[commandList[i]].description}`;
+      return `Usage:\`${client.commandHelps[commandList[i]].usage}\`\n\n ${
+        client.commandHelps[commandList[i]].description
+      }`;
     }
   }
   return '';
@@ -149,7 +198,9 @@ client.on('message', (message) => {
     if (msg.startsWith(prefix)) {
       com = msg.split(' ')[0].substring(prefix.length);
       args = msg.split(' ').slice(1);
-    } else if (message.mentions.users.some((user) => user.id === client.user.id)) {
+    } else if (
+      message.mentions.users.some((user) => user.id === client.user.id)
+    ) {
       [, com] = msg.split(' ');
       args = msg.split(' ').slice(2);
       if (!com) {
