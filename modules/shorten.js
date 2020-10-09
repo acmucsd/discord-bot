@@ -21,10 +21,10 @@ module.exports = {
     usage: '!acmurltest <shortlink> <longurl> [description]',
     description: "Shortens the provided URL into a 'acmurl' link.",
     method: (client, message, args) => {
-      // if (!message.member.roles.cache.some((r) => r.name === "Board")) {
-      //   message.channel.send("You must be a Board member to use this command!");
-      //   return;
-      // }
+      if (!message.member.roles.cache.some((r) => r.name === 'Board')) {
+        message.channel.send('You must be a Board member to use this command!');
+        return;
+      }
 
       const shortlink = args[0];
       const longlink = args[1];
@@ -161,7 +161,7 @@ module.exports = {
     usage: '!acmurl <shortlink> <longurl> [description]',
     description: "Shortens the provided URL into a 'acmurl' link.",
     method: (client, message, args) => {
-      if (!message.member.roles.some((r) => r.name === 'Board')) {
+      if (!message.member.roles.cache.some((r) => r.name === 'Board')) {
         message.channel.send('You must be a Board member to use this command!');
         return;
       }
