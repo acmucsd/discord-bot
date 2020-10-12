@@ -100,7 +100,7 @@ client.on('ready', () => {
   client.user.setActivity(process.env.BOT_ACTIVITY);
 });
 
-const openLeetcodeCron = new Cron('0 50 17 * * 0', () => {
+const openLeetcodeCron = new Cron('0 0 17 * * 0', () => {
   client.channels
     .fetch(process.env.LEETCODE_CATEGORY_ID)
     .then((leetcodeCategory) => {
@@ -115,7 +115,7 @@ const openLeetcodeCron = new Cron('0 50 17 * * 0', () => {
     });
 });
 
-const closeLeetcodeCron = new Cron('0 25 16 * * 0', () => {
+const closeLeetcodeCron = new Cron('0 0 20 * * 0', () => {
   client.channels
     .fetch(process.env.LEETCODE_CATEGORY_ID)
     .then((leetcodeCategory) => {
