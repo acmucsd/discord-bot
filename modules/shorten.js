@@ -121,9 +121,9 @@ module.exports = {
                     const shortenEmbed = new Discord.MessageEmbed()
                       .setTitle('Updated shortened link!')
                       .setDescription(
-                        `Short link: https://url.acmucsd.com/${shortlink}\nPreviously shortened link: ${oldLink}`,
+                        `Short link: https://acmurl.com/${shortlink}\nPreviously shortened link: ${oldLink}`,
                       )
-                      .setURL(`https://url.acmucsd.com/${shortlink}`)
+                      .setURL(`https://acmurl.com/${shortlink}`)
                       .setColor('0x3498DB');
                     message.channel.send(shortenEmbed);
                   })
@@ -141,10 +141,8 @@ module.exports = {
           } else if (addLinkResponse.body.status === 'success') {
             const shortenEmbed = new Discord.MessageEmbed()
               .setTitle('Set shortened link!')
-              .setDescription(
-                `Short link: https://url.acmucsd.com/${shortlink}`,
-              )
-              .setURL(`https://url.acmucsd.com/${shortlink}`)
+              .setDescription(`Short link: https://acmurl.com/${shortlink}`)
+              .setURL(`https://acmurl.com/${shortlink}`)
               .setColor('0x3498DB');
             message.channel.send(shortenEmbed);
           }
