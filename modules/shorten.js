@@ -9,7 +9,7 @@ const Discord = require('discord.js');
 
 module.exports = {
   // List of available commands in the module
-  commands: ['acmurl', 'acmurltest'],
+  commands: ['acmurl', 'rebrandly'],
 
   // A description of this module
   description: "Interacts with 'acmurl' in various ways.",
@@ -17,7 +17,7 @@ module.exports = {
   // An image representing the module
   thumbnail: '',
 
-  acmurltest: {
+  acmurl: {
     usage: '!acmurltest <shortlink> <longurl> [description]',
     description: "Shortens the provided URL into a 'acmurl' link.",
     method: (client, message, args) => {
@@ -157,9 +157,10 @@ module.exports = {
     },
   },
 
-  acmurl: {
-    usage: '!acmurl <shortlink> <longurl> [description]',
-    description: "Shortens the provided URL into a 'acmurl' link.",
+  rebrandly: {
+    usage: '!rebrandly <shortlink> <longurl> [description]',
+    description:
+      "Shortens the provided URL into a 'acmurl' link. Uses Rebrandly instead of ACMURL.",
     method: (client, message, args) => {
       if (!message.member.roles.cache.some((r) => r.name === 'Board')) {
         message.channel.send('You must be a Board member to use this command!');
