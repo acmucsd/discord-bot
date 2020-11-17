@@ -18,7 +18,7 @@ module.exports = {
   thumbnail: '',
 
   acmurl: {
-    usage: '!acmurltest <shortlink> <longurl> [description]',
+    usage: '!acmurl <shortlink> <longurl> [description]',
     description: "Shortens the provided URL into a 'acmurl' link.",
     method: (client, message, args) => {
       if (!message.member.roles.cache.some((r) => r.name === 'Board')) {
@@ -26,7 +26,7 @@ module.exports = {
         return;
       }
 
-      const shortlink = args[0];
+      let shortlink = args[0];
       const longlink = args[1];
       const description = args.slice(2).join(' ');
       const linkTitle = description || `Discord Bot - ${shortlink}`; // optional argument or slashtag
@@ -59,6 +59,14 @@ module.exports = {
         message.channel.send('The long link must be a valid URL!');
         return;
       }
+
+      if (shortlink.toLowerCase() !== shortlink) {
+        shortlink = shortlink.toLowerCase();
+        message.channel.send(
+          `Your shortlink has capital letters in it! This is currently unsupported and will be changed in the future for ACMURL.\n\nYour new shortlink will be: _${shortlink}_\nCreating...`,
+        );
+      }
+
       const addLinkOptions = {
         uri: 'https://url.acmucsd.com/yourls-api.php',
         method: 'POST',
