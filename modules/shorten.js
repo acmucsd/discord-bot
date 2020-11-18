@@ -26,7 +26,7 @@ module.exports = {
         return;
       }
 
-      let shortlink = args[0];
+      const shortlink = args[0];
       const longlink = args[1];
       const description = args.slice(2).join(' ');
       const linkTitle = description || `Discord Bot - ${shortlink}`; // optional argument or slashtag
@@ -58,13 +58,6 @@ module.exports = {
         // check for valid URL
         message.channel.send('The long link must be a valid URL!');
         return;
-      }
-
-      if (shortlink.toLowerCase() !== shortlink) {
-        shortlink = shortlink.toLowerCase();
-        message.channel.send(
-          `Your shortlink has capital letters in it! This is currently unsupported and will be changed in the future for ACMURL.\n\nYour new shortlink will be: _${shortlink}_\nCreating...`,
-        );
       }
 
       const addLinkOptions = {
