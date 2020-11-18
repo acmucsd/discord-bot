@@ -68,7 +68,7 @@ module.exports = {
       }
 
       const addLinkOptions = {
-        uri: 'https://url.acmucsd.com/yourls-api.php',
+        uri: 'https://acmurl.com/yourls-api.php',
         method: 'POST',
         form: {
           username: process.env.ACMURL_USERNAME,
@@ -91,7 +91,7 @@ module.exports = {
             && addLinkResponse.body.code === 'error:keyword'
           ) {
             const expandLinkOptions = {
-              uri: 'https://url.acmucsd.com/yourls-api.php',
+              uri: 'https://acmurl.com/yourls-api.php',
               method: 'POST',
               form: {
                 username: process.env.ACMURL_USERNAME,
@@ -109,7 +109,7 @@ module.exports = {
                 const oldLink = expandLinkResponse.body.longurl;
 
                 const editLinkOptions = {
-                  uri: 'https://url.acmucsd.com/yourls-api.php',
+                  uri: 'https://acmurl.com/yourls-api.php',
                   method: 'POST',
                   form: {
                     username: process.env.ACMURL_USERNAME,
