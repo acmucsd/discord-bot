@@ -10,7 +10,16 @@ export default class Message implements BotEvent {
     public async run(args: any): Promise<void> {
         const message: DiscordMessage = args;
 
-        if (message.author.bot || !message.content.startsWith(this.client.settings.prefix)) return;
+        if (message.author.bot) return;
+
+        if (message.mentions.users.some((user) => user.id === this.client.user!.id)) {
+            if (message.author.id === this.client.settings.maintainerID) {
+                await message.channel.send('I no longer respect your demands, master.');
+            } else {
+                await message.channel.send(':pleading_face: :point_right: :point_left:');
+            }
+            return;
+        }
 
         const argus = message.content.split(/\s+/g);
         const command = argus.shift()!.slice(this.client.settings.prefix.length);

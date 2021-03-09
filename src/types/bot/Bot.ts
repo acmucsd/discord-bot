@@ -29,6 +29,7 @@ export interface CommandOptions {
 export interface BotSettings {
     presence: PresenceData;
     clientOptions?: ClientOptions;
+    maintainerID?: string;
     token?: string;
     prefix: string;
     paths: {
