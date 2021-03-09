@@ -21,6 +21,10 @@ export class ActionManager {
         readdir(commands, (err, files) => {
             if (err) Logger.error(err);
 
+            // Due to "help" not loading commands probably, we'll have to construct that last.
+            // Move "Help.ts" to end of "files" array.
+            files.push(files.splice(files.indexOf("Help.ts"), 1)[0]);
+
             files.forEach(cmd => {
                 if (statSync(join(commands, cmd)).isDirectory()) {
                     this.initializeCommands(client);
@@ -64,5 +68,9 @@ export class ActionManager {
                 );
             });
         });
+    }
+
+    public initializeHelpMessage(client: BotClient): void {
+
     }
 }
