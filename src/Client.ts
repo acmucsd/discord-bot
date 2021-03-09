@@ -14,6 +14,9 @@ export class Client extends DiscordClient implements BotClient {
         super(configuration.clientOptions || {});
         this.settings = configuration;
         this.settings.token = process.env.BOT_TOKEN;
+        // optional "!" required here because Discord.js doesn't let you make this mandatory,
+        // so we need the "name" to be an optional assignment.
+        this.settings.presence.activity!.name = process.env.BOT_ACTIVITY;
         this.initialize();
     }
 

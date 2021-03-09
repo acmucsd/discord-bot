@@ -3,7 +3,7 @@ import { BotSettings } from '../types';
 export const settings: BotSettings = {
     presence: {
         activity: {
-            name: process.env.BOT_ACTIVITY,
+            name: 'ACM Store Demo',
             type: 'PLAYING'
         }
     },
