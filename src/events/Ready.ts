@@ -8,7 +8,7 @@ export default class Ready implements BotEvent {
     public async run(): Promise<void> {
         if (this.client.user) {
             Logger.info(`${this.client.user.username} now ready!`);
-            this.client.user.setPresence(this.client.settings.presence);
+            await this.client.user.setPresence(this.client.settings.presence);
         }
     }
 }
