@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Message as DiscordMessage } from 'discord.js';
+import { Logger } from '../utils/Logger';
 import { Client } from '../Client';
 import { BotEvent } from '../types';
 
@@ -17,6 +18,13 @@ export default class Message implements BotEvent {
 
         if (!cmd) return;
         if (!cmd.canRun(message.author, message)) return;
+
+        Logger.info(`Command '${command}' received from ${message.author.username} (ID: ${message.author.id}) with arguments ${JSON.stringify(argus)}`, {
+            eventType: "command",
+            command: command,
+            arguments: argus,
+            author: message.author,
+        });
 
         await cmd.run(message, argus);
     }
