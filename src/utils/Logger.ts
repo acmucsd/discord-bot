@@ -29,7 +29,7 @@ export default createLogger({
   format: json(),
   transports: [
     new Transports.Console({
-      level: 'info',
+      level: 'debug',
       format: combine(colorize(), consoleLogFormat),
     }),
     new Transports.DailyRotateFile({
