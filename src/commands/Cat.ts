@@ -49,11 +49,8 @@ export default class Cat extends Command {
       headers: {
         'x-api-key': this.client.settings.apiKeys.catAPI,
       },
-      responseType: 'json',
-    });
+    }).json() as any;
 
-    const { body } = catAPIResponse as any;
-
-    return body !== undefined ? body[0].url : undefined;
+    return catAPIResponse !== undefined ? catAPIResponse[0].url : undefined;
   }
 }

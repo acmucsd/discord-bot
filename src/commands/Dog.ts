@@ -46,11 +46,8 @@ export default class Dog extends Command {
 
   private static async getDogPictureURL(): Promise<string> {
     const dogAPIResponse = await got('https://dog.ceo/api/breeds/image/random', {
-      responseType: 'json',
-    });
+    }).json() as any;
 
-    const { body } = dogAPIResponse as any;
-
-    return body !== undefined ? body.message : undefined;
+    return dogAPIResponse !== undefined ? dogAPIResponse.message : undefined;
   }
 }

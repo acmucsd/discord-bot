@@ -49,11 +49,8 @@ export default class Bread extends Command {
       headers: {
         Authorization: `Client-ID ${this.client.settings.apiKeys.unsplash}`,
       },
-      responseType: 'json',
-    });
+    }).json() as any;
 
-    const { body } = breadAPIResponse as any;
-
-    return body !== undefined ? body.urls.full : undefined;
+    return breadAPIResponse !== undefined ? breadAPIResponse.urls.full : undefined;
   }
 }
