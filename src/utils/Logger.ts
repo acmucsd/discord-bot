@@ -2,9 +2,10 @@ import {
   createLogger, transports as Transports, format,
 } from 'winston';
 import 'winston-daily-rotate-file';
+import { DateTime } from 'luxon';
 
 const {
-  printf, combine, json, colorize,
+  printf, combine, json, timestamp, colorize,
 } = format;
 
 /**
@@ -14,8 +15,8 @@ const {
  * with the timestamp, log level and message.
  */
 const consoleLogFormat = printf((information) => {
-  const timestamp = new Date().toISOString();
-  return `[${timestamp}] [${information.level}]: ${information.message}`;
+  const currentTime = DateTime.now().setZone('America/Los_Angeles').toISO();
+  return `[${currentTime}] [${information.level}]: ${information.message}`;
 });
 
 /**
@@ -33,8 +34,9 @@ export default createLogger({
     }),
     new Transports.DailyRotateFile({
       level: 'info',
+      format: combine(timestamp(), json()),
       filename: 'logs/BreadBot-%DATE%.log',
-      datePattern: 'YYYY-MM-DD-HH',
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
