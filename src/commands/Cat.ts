@@ -9,6 +9,7 @@ export default class Cat extends Command {
   constructor(client: BotClient) {
     super(client, {
       name: 'cat',
+      enabled: true,
       description: 'Returns a random cute cat picture fetched from The Cat API. (https://thecatapi.com/)',
       category: 'Picture',
       usage: client.settings.prefix.concat('cat'),

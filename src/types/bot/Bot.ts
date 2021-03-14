@@ -14,6 +14,7 @@ import Command from '../../Command';
 
 export interface CommandOptions {
     name: string;
+    enabled: boolean;
     description?: string;
     usage?: string;
     category?: string;

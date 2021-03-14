@@ -9,6 +9,7 @@ export default abstract class Command {
 
     constructor(protected client: BotClient, options: CommandOptions) {
       this.conf = {
+        enabled: options.enabled,
         name: options.name,
         description: options.description || 'No information specified.',
         usage: options.usage || 'No usage specified.',

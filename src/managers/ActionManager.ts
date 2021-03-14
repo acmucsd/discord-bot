@@ -36,9 +36,11 @@ export default class {
             ));
 
             const LoadedCommand = commandImport.default;
-            const command = new LoadedCommand(client);
+            const command: Command = new LoadedCommand(client);
 
-            this.commands.set(command.conf.name, command);
+            if (command.conf.enabled) {
+              this.commands.set(command.conf.name, command);
+            }
           }
         });
       });
