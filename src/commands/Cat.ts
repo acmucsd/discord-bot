@@ -40,7 +40,7 @@ export default class Cat extends Command {
         error: e,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when hitting the Cat API. *(Error UUID: ${e.uuid})*`);
+      await super.respond(message.channel, `An error occurred when hitting the Cat API. *(Error UUID: ${errorUUID})*`);
     }
   }
 
