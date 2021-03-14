@@ -27,6 +27,10 @@ export interface LoggableError extends Error {
 }
 
 export interface BotSettings {
+    acmurl: {
+        username: string;
+        password: string;
+    }
     apiKeys: {
         catAPI?: string;
         unsplash?: string;
