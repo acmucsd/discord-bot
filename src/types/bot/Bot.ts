@@ -15,6 +15,7 @@ import Command from '../../Command';
 export interface CommandOptions {
     name: string;
     enabled: boolean;
+    boardRequired?: boolean;
     description?: string;
     usage?: string;
     category?: string;

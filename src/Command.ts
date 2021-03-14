@@ -11,6 +11,7 @@ export default abstract class Command {
       this.conf = {
         enabled: options.enabled,
         name: options.name,
+        boardRequired: options.boardRequired || false,
         description: options.description || 'No information specified.',
         usage: options.usage || 'No usage specified.',
         category: options.category || 'Uncategorized',
@@ -25,6 +26,21 @@ export default abstract class Command {
      * @returns {boolean} Whether the user can run the command.
      */
     public canRun(user: User, message: Message): boolean {
+      const isBoard = message.member ? message.member.roles.cache.some((r) => r.name === 'Board') : false;
+
+      if (this.conf.boardRequired && !isBoard) {
+        message.channel.send(
+          'You must be a Board member to use this command!',
+        ).then(() => {
+          Logger.warn(`Member ${message.author.username} attempted to use a Board command without permission!`, {
+            eventType: 'rolesError',
+            author: message.member,
+            requiredRole: 'Board',
+          });
+        });
+        return false;
+      }
+
       const hasPermission = message.member
         ? message.member.hasPermission(this.conf.requiredPermissions, {
           checkAdmin: true,
