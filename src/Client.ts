@@ -19,6 +19,7 @@ export default class Client extends DiscordClient implements BotClient {
         this.settings.presence.activity!.name = process.env.BOT_ACTIVITY;
         this.settings.maintainerID = process.env.MAINTAINER_USER_ID;
         this.settings.apiKeys.catAPI = process.env.CAT_API_KEY;
+        this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
         this.initialize().then();
     }
 

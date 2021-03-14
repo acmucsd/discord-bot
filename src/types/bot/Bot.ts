@@ -28,6 +28,7 @@ export interface LoggableError extends Error {
 export interface BotSettings {
     apiKeys: {
         catAPI?: string;
+        unsplash?: string;
     }
     presence: PresenceData;
     clientOptions?: ClientOptions;
