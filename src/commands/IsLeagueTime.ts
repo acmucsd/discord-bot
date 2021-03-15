@@ -3,6 +3,12 @@ import { DateTime, Interval } from 'luxon';
 import Command from '../Command';
 import { BotClient } from '../types';
 
+/**
+ * Command to check whether it is currently League Time.
+ *
+ * League Time is defined as "between 10 PM and 6 AM", unless it is summer, in which case,
+ * it's always League Time.
+ */
 export default class IsLeagueTime extends Command {
   constructor(client: BotClient) {
     super(client, {
@@ -36,6 +42,8 @@ export default class IsLeagueTime extends Command {
       DateTime.fromFormat('10:00 PM', 't', { zone: 'America/Los_Angeles' }),
       DateTime.fromFormat('6:00 AM', 't', { zone: 'America/Los_Angeles' }).plus({ days: 1 }),
     ).contains(DateTime.now());
+
+    // Return the logic for League Time.
     if (isSummer) {
       await super.respond(message.channel, 'True.');
     } else {

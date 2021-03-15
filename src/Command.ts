@@ -4,9 +4,32 @@ import {
 } from './types';
 import Logger from './utils/Logger';
 
+/**
+ * Abstract class representing a Command in BreadBot.
+ *
+ * This generally is a class holding any necessary methods to run the Command
+ * (API calls, pre-processing functions) while also maintaining the options and flags
+ * representing a command. CommandOptions represents the possible configuration for a
+ * Command, which typically includes:
+ * - name, category, description
+ * - usage of command
+ * - flags to determine execution (required permissions. required roles, enabled at runtime)
+ */
 export default abstract class Command {
+    /**
+     * The command options for the bot.
+     */
     public conf: CommandOptions;
 
+    /**
+     * The default constructor for Commands.
+     *
+     * By default, all required arguments are passed by CommandOptions. Other optional arguments
+     * are given sensible defaults here.
+     *
+     * @param client The client receiving the Command.
+     * @param options Any options to set for the Command.
+     */
     constructor(protected client: BotClient, options: CommandOptions) {
       this.conf = {
         enabled: options.enabled,
@@ -26,6 +49,10 @@ export default abstract class Command {
      * @returns {boolean} Whether the user can run the command.
      */
     public canRun(user: User, message: Message): boolean {
+      // Check whether user has the Board role.
+      //
+      // They either have a role cache (they have at least one Role) that includes "Board"
+      // or they don't.
       const isBoard = message.member ? message.member.roles.cache.some((r) => r.name === 'Board') : false;
 
       if (this.conf.boardRequired && !isBoard) {
@@ -41,6 +68,9 @@ export default abstract class Command {
         return false;
       }
 
+      // Checks whether user has required permissions for Command.
+      // If not, they won't run it. Bypass checks for administrators and owners to
+      // not lock them out if they mess up channel configuration.
       const hasPermission = message.member
         ? message.member.hasPermission(this.conf.requiredPermissions, {
           checkAdmin: true,
