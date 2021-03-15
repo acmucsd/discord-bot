@@ -11,7 +11,7 @@ export default class Help extends Command {
         enabled: true,
         description: 'Displays the documentation for a provided command. If no arguments received, all commands are shown with a brief description.',
         category: 'Information',
-        usage: `${client.settings.prefix.concat('help')} [command]`,
+        usage: client.settings.prefix.concat('help [command]'),
         requiredPermissions: ['SEND_MESSAGES'],
       });
 

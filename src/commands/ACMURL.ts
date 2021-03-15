@@ -14,7 +14,7 @@ export default class ACMURL extends Command {
       enabled: true,
       description: 'Shortens the provided link into an `ACMURL` link.',
       category: 'Utility',
-      usage: `${client.settings.prefix.concat('acmurl')} <shortlink> <longlink> [description]`,
+      usage: client.settings.prefix.concat('acmurl <shortlink> <longlink> [description]'),
       requiredPermissions: ['SEND_MESSAGES'],
     });
   }
