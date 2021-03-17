@@ -5,7 +5,7 @@ coding on BreadBot.
 
 ## Architecture
 
-BreadBot is a TypeScript-based bot using the Discord.js library, structured
+BreadBot is a TypeScript-based bot using the [Discord.js library](https://discord.js.org/#/), structured
 around dependency-injected functionality and dynamic imports. At its core,
 BreadBot is booted by dynamically importing critical classes in its source
 folders.
@@ -46,7 +46,7 @@ Once you're done, make sure that:
 - You have proper logging for any errors and commands. You can find good
 examples of logging in `src/Commands/ACMURL.ts`, as it has the most logging out
 of all the other commands.
-- You've ran your codebase through the linter by running `npm start lint:fix`.
+- You've ran your codebase through the linter by running `npm run lint:fix`.
   CI will check for this.
 - You've tested the bot's functionality by running `npm start` in a testing
 server. This isn't necessary, as Dev Team will likely test new functionality,
@@ -57,6 +57,6 @@ it's all good, your PR will be merged pretty quick.
 
 ## Bug Reporting
 
-If you find any wack functionality in BreadBot, please report in the Issues
-section. Do not add labels to your Issue, as Dev Team will handle triaging
+If you find any wack functionality in BreadBot, please report in the [Issues
+section](https://github.com/acmucsd/discord-bot/issues). Do not add labels to your Issue, as Dev Team will handle triaging
 themselves.

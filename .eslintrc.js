@@ -20,7 +20,7 @@ module.exports = {
   ],
   rules: {
     'import/extensions': 'off',
-    'no-unused-vars': 'off',
+    'no-unused-vars': 'off', /* because ESLint is broken, we need to disable the js version of this */
     '@typescript-eslint/no-unused-vars': ['error'],
   },
   settings: {

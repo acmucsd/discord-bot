@@ -102,7 +102,6 @@ export default abstract class Command {
      */
     public async respond(channel: AnyChannel, message: EmbedOrMessage): Promise<Command> {
       await channel.send(message);
-
       return this;
     }
 

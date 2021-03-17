@@ -21,8 +21,7 @@ In order to configure BreadBot, you will need to:
 Some environment variables are mandatory, make sure to check which ones in the
 comments.  We assume you already have a Discord app for your bot. If not, you
 may check out a tutorial of how to do it
-[here](https://www.digitalocean.com/community/tutorials/how-to-build-a-discord-bot-with-node-js#step-1-%E2%80%94-setting-up-a-discord-bot).
-Part 1 is the useful part
+[here](https://www.digitalocean.com/community/tutorials/how-to-build-a-discord-bot-with-node-js#step-1-%E2%80%94-setting-up-a-discord-bot) (Part 1 is the useful part).
 
 ## Running
 

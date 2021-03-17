@@ -56,6 +56,7 @@ export default class Client extends DiscordClient implements BotClient {
         this.settings.maintainerID = process.env.MAINTAINER_USER_ID;
         this.settings.apiKeys.catAPI = process.env.CAT_API_KEY;
         this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
+
         if (!process.env.ACMURL_USERNAME) {
           Logger.error('Could not construct Client class: missing ACMURL username in envvars', {
             eventType: 'initError',
