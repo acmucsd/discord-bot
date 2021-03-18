@@ -7,15 +7,14 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node dist/src/index.js",
-    "start:js": "node server.js"
+    "start": "tsc && node dist/src/index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/acmucsd/discord-bot.git"
   },
   "author": "",
-  "license": "MIT",
+  "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/acmucsd/discord-bot/issues"
   },
