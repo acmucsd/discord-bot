@@ -4,7 +4,7 @@ import { v4 as newUUID } from 'uuid';
 import Command from '../Command';
 import { BotClient, UUIDv4 } from '../types';
 import Logger from '../utils/Logger';
-import validURL from '../utils/validURL';
+import { validURL } from '../utils/validType';
 
 /**
  * Command to shorten long URL's to an ACMURL.
