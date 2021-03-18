@@ -1,8 +1,10 @@
 import { Message, MessageEmbed } from 'discord.js';
 import got from 'got';
 import { DateTime, Interval } from 'luxon';
-import { BotClient, PortalEvent } from '../types';
+import { v4 as newUUID } from 'uuid';
+import { BotClient, PortalEvent, UUIDv4 } from '../types';
 import Command from '../Command';
+import Logger from '../utils/Logger';
 
 /**
  * This Command DM's the caller the checkin code and Express Checkin link for any events
@@ -45,73 +47,88 @@ export default class Checkin extends Command {
       await super.respond(message.channel, `I only allow public checkin codes for live events. Try \`${this.client.settings.prefix.concat('checkin now')}\`.`);
     }
     // Get all future events marked in the portal API.
-    const futureEvents = await this.getFutureEvents();
+    try {
+      const futureEvents = await this.getFutureEvents();
 
-    // Oh, boy, here come more dates and times to check.
-    // Luxon makes it much nicer, however.
-    //
-    // We need two sets of arrays for "checkin":
-    // - all events that have a start time within today's timeframe
-    // - all events that are live RIGHT NOW
-    //
-    // The first set is useful for us to prepare a checkin code beforehand, while the second set
-    // enables the functionality for `checkin now`. We'll start with the first set.
-    const todayEvents = futureEvents.filter((event) => {
-      // get today's midnight
-      const midnightToday = DateTime.now().set({
-        hour: 0, minute: 0, second: 0, millisecond: 0,
+      // Oh, boy, here come more dates and times to check.
+      // Luxon makes it much nicer, however.
+      //
+      // We need two sets of arrays for "checkin":
+      // - all events that have a start time within today's timeframe
+      // - all events that are live RIGHT NOW
+      //
+      // The first set is useful for us to prepare a checkin code beforehand, while the second set
+      // enables the functionality for `checkin now`. We'll start with the first set.
+      const todayEvents = futureEvents.filter((event) => {
+        // get today's midnight
+        const midnightToday = DateTime.now().set({
+          hour: 0, minute: 0, second: 0, millisecond: 0,
+        });
+
+        // get tomorrow's midnight
+        const midnightTomorrow = DateTime.now().set({
+          hour: 0, minute: 0, second: 0, millisecond: 0,
+        }).plus({ day: 1 });
+
+        // check if start time in between
+        return Interval.fromDateTimes(midnightToday, midnightTomorrow).contains(event.start);
       });
 
-      // get tomorrow's midnight
-      const midnightTomorrow = DateTime.now().set({
-        hour: 0, minute: 0, second: 0, millisecond: 0,
-      }).plus({ day: 1 });
+      // Check if current time in between event
+      const liveEvents = futureEvents.filter(
+        (event) => Interval.fromDateTimes(event.start, event.end).contains(DateTime.now()),
+      );
 
-      // check if start time in between
-      return Interval.fromDateTimes(midnightToday, midnightTomorrow).contains(event.start);
-    });
+      // We'll make sure to check if the required set of events by
+      // command arugments is empty; if it is, just return "No events today!"
+      if (!isPublic && todayEvents.length === 0) {
+        await super.respond(message.channel, 'No events today!');
+        return;
+      }
+      if (isPublic === 'now' && liveEvents.length === 0) {
+        await super.respond(message.channel, 'No events right now!');
+        return;
+      }
 
-    // Check if current time in between event
-    const liveEvents = futureEvents.filter((event) => Interval.fromDateTimes(event.start, event.end)
-      .contains(DateTime.now()));
+      // What we need now is to construct the Embed to send for `checkin` with no arguments,
+      // as well as the Embed for when we have `checkin now`.
+      //
+      // First one is just today's events.
+      const privateEmbedDescription = Checkin.generateCheckinCodeDescription(todayEvents);
 
-    // We'll make sure to check if the required set of events by
-    // command arugments is empty; if it is, just return "No events today!"
-    if (!isPublic && todayEvents.length === 0) {
-      await super.respond(message.channel, 'No events today!');
-      return;
-    } if (isPublic === 'now' && liveEvents.length === 0) {
-      await super.respond(message.channel, 'No events right now!');
-      return;
-    }
+      // Next up we're doing live events. Same description, just with different events.
+      const publicEmbedDescription = Checkin.generateCheckinCodeDescription(liveEvents);
 
-    // What we need now is to construct the Embed to send for `checkin` with no arguments,
-    // as well as the Embed for when we have `checkin now`.
-    //
-    // First one is just today's events.
-    const privateEmbedDescription = this.generateCheckinCodeDescription(todayEvents);
+      // The private DM Embed will have a simpler title.
+      const privateEmbed = new MessageEmbed()
+        .setTitle(':calendar_spiral: Today\'s Events')
+        .setDescription(privateEmbedDescription)
+        .setColor('0x3498DB');
 
-    // Next up we're doing live events. Same description, just with different events.
-    const publicEmbedDescription = this.generateCheckinCodeDescription(liveEvents);
+      // Public Embed will be slightly more of a motivator, with a different title.
+      const publicEmbed = new MessageEmbed()
+        .setTitle(':calendar_spiral: Don\'t forget to check in!')
+        .setDescription(publicEmbedDescription)
+        .setColor('0x3498DB');
 
-    // The private DM Embed will have a simpler title.
-    const privateEmbed = new MessageEmbed()
-      .setTitle(':calendar_spiral: Today\'s Events')
-      .setDescription(privateEmbedDescription)
-      .setColor('0x3498DB');
-
-    // Public Embed will be slightly more of a motivator, with a different title.
-    const publicEmbed = new MessageEmbed()
-      .setTitle(':calendar_spiral: Don\'t forget to check in!')
-      .setDescription(publicEmbedDescription)
-      .setColor('0x3498DB');
-
-    // Now we finally check the command argument.
-    // If we just had `checkin` in our call, no arguments...
-    if (!isPublic) {
-      await message.author.send(privateEmbed);
-    } else {
-      await super.respond(message.channel, publicEmbed);
+      // Now we finally check the command argument.
+      // If we just had `checkin` in our call, no arguments...
+      if (!isPublic) {
+        await message.author.send(privateEmbed);
+      } else {
+        await super.respond(message.channel, publicEmbed);
+      }
+    } catch (e) {
+      // Similarly to Top, only errors I could find here involve the API,
+      // so if anything pops up, log the API errors.
+      const errorUUID: UUIDv4 = newUUID();
+      Logger.error(`Error whilst fetching future events: ${e.message}`, {
+        eventType: 'interfaceError',
+        interface: 'portalAPI',
+        error: e,
+        uuid: errorUUID,
+      });
+      await super.respond(message.channel, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
     }
   }
 
@@ -147,7 +164,7 @@ export default class Checkin extends Command {
    * @param events The events to generate a Checkin Code Embed description for.
    * @private
    */
-  private generateCheckinCodeDescription(events: PortalEvent[]): string {
+  private static generateCheckinCodeDescription(events: PortalEvent[]): string {
     const description: string[] = [];
     events.forEach((event) => {
       const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
