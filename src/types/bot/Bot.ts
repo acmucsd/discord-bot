@@ -139,6 +139,11 @@ export interface BotClient extends Client {
      * for other commands, like Help.
      */
     commands: Collection<string, Command>;
+
+    /**
+     * The API Token to the Membership Portal API.
+     */
+    apiToken: string;
 }
 
 /**

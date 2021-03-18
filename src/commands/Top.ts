@@ -1,8 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 import got from 'got';
-import { DateTime } from 'luxon';
 import { chunk } from 'lodash';
-import { decode } from 'jsonwebtoken';
 import { Embeds } from 'discord-paginationembed';
 import { v4 as newUUID } from 'uuid';
 import Command from '../Command';
@@ -31,12 +29,6 @@ import Logger from '../utils/Logger';
  */
 export default class Top extends Command {
   /**
-   * The API token for the admin account from the Membership Portal.
-   * @private
-   */
-  private apiToken: string;
-
-  /**
    * The default constructor. Primarily logs in to the portal when initialized and saves
    * the provided JWT into our variable.
    *
@@ -51,12 +43,10 @@ export default class Top extends Command {
       usage: client.settings.prefix.concat('top [`number`: min 3, max 100] [type: "quarter" | "year"]'),
       requiredPermissions: ['SEND_MESSAGES'],
     });
-    this.apiToken = '';
-    this.loginPortal().then();
   }
 
   /**
-   * The workhorse of Top, this command performs error validation on the arguments, as well as
+   * The workhorse of Top, this method performs error validation on the arguments, as well as
    * constructing the paginated Embed.
    *
    * In short, the steps taken are:
@@ -68,8 +58,8 @@ export default class Top extends Command {
    * - Create Embeds for each page of the leaderboard
    * - Create Pagination embed that encapsulates each other Embed as a set of pages
    *
-   * @param message
-   * @param args
+   * @param message The Message with the command call.
+   * @param args The Command arguments.
    */
   public async run(message: Message, args: string[]): Promise<void> {
     // deconstruct possible arguments
@@ -194,19 +184,13 @@ export default class Top extends Command {
    * @private
    */
   private async getLeaderboard(limit: number, leaderboardType: 'quarter' | 'year' | 'all-time'): Promise<User[]> {
-    // check if token still valid. It might require updating, so we'll login again if it does.
-    const tokenValid = await this.tokenValid();
-    if (!tokenValid) {
-      await this.loginPortal();
-    }
-
     // If we want the "all-time" leaderboard, we don't need bounds, so just call the API
     // with the limit parameter.
     if (leaderboardType === 'all-time') {
       const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/leaderboard', {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiToken}`,
+          Authorization: `Bearer ${this.client.apiToken}`,
         },
         searchParams: {
           limit,
@@ -232,7 +216,7 @@ export default class Top extends Command {
     const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/leaderboard', {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiToken}`,
+        Authorization: `Bearer ${this.client.apiToken}`,
       },
       searchParams: {
         from: startBound,
@@ -245,45 +229,5 @@ export default class Top extends Command {
       throw new Error(portalAPIResponse.error);
     }
     return portalAPIResponse.leaderboard;
-  }
-
-  /**
-   * Logs in to the portal, saving the provided JWT token into the class variable.
-   * @private
-   */
-  private async loginPortal(): Promise<void> {
-    const portalAPIResponse = await got.post('https://api.acmucsd.com/api/v2/auth/login', {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      json: {
-        email: this.client.settings.portalAPI.username,
-        password: this.client.settings.portalAPI.password,
-      },
-    }).json() as any;
-
-    if (portalAPIResponse.error !== null) {
-      throw new Error(portalAPIResponse.error);
-    }
-    this.apiToken = portalAPIResponse.token;
-  }
-
-  /**
-   * Checks whether the currently saved JWT token is still valid. Checked by ensuring
-   * expiry time is further in the future than our current time. No checks for issuing
-   * time currently, as we're only getting token directly from the portal API.
-   * @private
-   */
-  private async tokenValid(): Promise<boolean> {
-    const payload = decode(this.apiToken);
-    if (payload === null) {
-      throw new Error('JWT payload for portal API empty!');
-    } else if (typeof payload === 'string' || !payload.exp) {
-      throw new Error('JWT payload for portal API does not contain expiry date!');
-    }
-    const expiryEpochSeconds: number = payload.exp;
-    const expiryDate = DateTime.fromSeconds(expiryEpochSeconds);
-    const currentTime = DateTime.now();
-    return expiryDate > currentTime;
   }
 }
