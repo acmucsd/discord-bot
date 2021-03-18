@@ -3,6 +3,7 @@ import { BotSettings } from '../types';
 export default {
   apiKeys: {},
   acmurl: {},
+  portalAPI: {},
   presence: {
     activity: {
       name: 'ACM Store Demo',

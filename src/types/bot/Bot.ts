@@ -88,6 +88,15 @@ export interface BotSettings {
         catAPI?: string;
         unsplash?: string;
     }
+
+    /**
+     * Membership Portal API admin account credentials.
+     */
+    portalAPI: {
+        username: string;
+        password: string;
+    }
+
     /**
      * Presence data for bot. This displays cool Rich presence for the bot, if given.
      */

@@ -22,9 +22,12 @@
   "homepage": "https://github.com/acmucsd/discord-bot#readme",
   "dependencies": {
     "cron": "^1.8.2",
+    "discord-paginationembed": "^2.1.0",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "got": "^11.8.2",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
     "luxon": "^1.26.0",
     "reflect-metadata": "^0.1.13",
     "typedi": "^0.10.0",
@@ -35,6 +38,8 @@
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
+    "@types/jsonwebtoken": "^8.5.1",
+    "@types/lodash": "^4.14.168",
     "@types/luxon": "^1.26.2",
     "@types/node": "^14.14.32",
     "@types/uuid": "^8.3.0",
