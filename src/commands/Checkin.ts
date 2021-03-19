@@ -15,7 +15,7 @@ export default class Checkin extends Command {
   constructor(client: BotClient) {
     super(client, {
       name: 'checkin',
-      // boardRequired: true,
+      boardRequired: true,
       enabled: true,
       description: 'Sends a private message with all check-in codes from today\'s events. Calling with `now` argument sends public embed of checkin code if any events are now live!',
       category: 'Utility',
