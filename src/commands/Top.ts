@@ -153,6 +153,7 @@ export default class Top extends Command {
         .setPageIndicator(false)
         .setPage(1);
 
+      await message.delete();
       await outputEmbed.build();
       return;
     } catch (e) {
