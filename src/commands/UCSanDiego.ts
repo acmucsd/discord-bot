@@ -12,7 +12,7 @@ export default class UCSanDiegoCommand extends Command {
       name: 'ucsd',
       enabled: true,
       description: 'Corrects the spelling of our glorious university, UC San Diego.',
-      category: 'Uncategorized',
+      category: 'Meme',
       usage: client.settings.prefix.concat('ucsd'),
       requiredPermissions: ['SEND_MESSAGES'],
     });
