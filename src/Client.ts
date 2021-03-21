@@ -53,7 +53,15 @@ export default class Client extends DiscordClient implements BotClient {
       });
       throw new Error('Could not construct Client class: missing bot token in envvars');
     }
+    if (!process.env.BOT_PREFIX) {
+      Logger.error('Could not construct Client class: missing bot prefix in envvars', {
+        eventType: 'initError',
+        error: 'missing bot prefix in envvars',
+      });
+      throw new Error('Could not construct Client class: missing bot prefix in envvars');
+    }
     this.settings.token = process.env.BOT_TOKEN;
+    this.settings.prefix = process.env.BOT_PREFIX;
     // "!" required here because Discord.js doesn't let you make this mandatory,
     // so we need the "name" to be an optional assignment.
     this.settings.presence.activity!.name = process.env.BOT_ACTIVITY;
