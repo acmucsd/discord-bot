@@ -55,7 +55,7 @@ export default class Coverup extends Command {
         return;
       }
 
-      if (messageToCoverUp.content === '') {
+      if (messageToCoverUp.content === '' && messageToCoverUp.attachments.size === 0) {
         await super.respond(message.channel, "I can't cover up an empty message!");
         return;
       }
