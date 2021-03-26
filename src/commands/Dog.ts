@@ -51,7 +51,7 @@ export default class Dog extends Command {
         error: e,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when hitting the Dog API. *(Error UUID: ${errorUUID})`);
+      await super.respond(message.channel, `An error occurred when hitting the Dog API. *(Error UUID: ${errorUUID})*`);
     }
   }
 
