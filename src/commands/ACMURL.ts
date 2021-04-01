@@ -39,11 +39,13 @@ export default class ACMURL extends Command {
     // If we didn't get our required arguments...
     if (!shortlink || !longlink) {
       await super.respond(message.channel, 'You must provide both the long link and the short link!');
+      return;
     }
 
     // If provided long link is not a valid URL...
     if (!validURL(longlink)) {
       await super.respond(message.channel, 'The long link must be a valid HTTP/HTTPS URL!');
+      return;
     }
 
     try {
