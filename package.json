@@ -4,6 +4,7 @@
   "description": "ACM at UCSD's Discord Bot",
   "main": "server.js",
   "scripts": {
+    "build": "tsc",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
