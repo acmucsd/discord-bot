@@ -68,7 +68,7 @@ export default class Coverup extends Command {
           (attachment) => new MessageAttachment(attachment.url, `SPOILER_${attachment.name}`),
         );
         // Send it.
-        const captionContents = messageToCoverUp.content === '' ? '' : `||${messageToCoverUp.content}||`;
+        const captionContents = messageToCoverUp.content === '' ? '' : `|| ${messageToCoverUp.content.replace('|', '\\"')} ||`;
         await messageToCoverUp.channel.send(`**Covered up by ${message.author}**\n${captionContents}`, spoileredAttachments);
         // Delete the intermediary messages. These need to be deleted after because we need access
         // to the attachments before they get deleted by the Discord cache.
