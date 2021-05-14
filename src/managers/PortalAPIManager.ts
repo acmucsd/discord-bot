@@ -4,6 +4,7 @@ import schedule from 'node-schedule';
 import { decode } from 'jsonwebtoken';
 import { DateTime } from 'luxon';
 import { BotClient } from '../types';
+import Logger from '../utils/Logger';
 
 /**
  * PortalAPIManager manages any necessary maintenance of Portal API credentials, tokens,
@@ -30,7 +31,12 @@ export default class {
     public initializeTokenHandling(client: BotClient): void {
       this.loginPortal(client).then();
       this.apiTokenRefreshJob = schedule.scheduleJob(('0 * * * *'), () => {
+        Logger.info('Checking Membership Portal API token validity.');
         if (!this.tokenValid()) {
+          Logger.info('Membership Portal API token no longer valid! Refreshing.', {
+            eventType: 'manager',
+            manager: 'portalAPI',
+          });
           this.loginPortal(client).then();
         }
       });
