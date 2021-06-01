@@ -69,7 +69,7 @@ export default class {
      * time currently, as we're only getting token directly from the portal API.
      * @private
      */
-    public async tokenValid(): Promise<boolean> {
+    public tokenValid(): boolean {
       const payload = decode(this.apiToken);
       if (payload === null) {
         throw new Error('JWT payload for portal API empty!');
