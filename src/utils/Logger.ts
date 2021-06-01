@@ -2,10 +2,22 @@ import {
   createLogger, transports as Transports, format,
 } from 'winston';
 import 'winston-daily-rotate-file';
+import { DateTime } from 'luxon';
 
 const {
-  combine, json, timestamp,
+  printf, combine, json, timestamp, colorize,
 } = format;
+
+/**
+ * Formatting for the standard output transport.
+ *
+ * Ideally, we don't have to read JSON whilst reading stdout, so we'll make a readable format
+ * with the timestamp, log level and message.
+ */
+const consoleLogFormat = printf((information) => {
+  const currentTime = DateTime.now().setZone('America/Los_Angeles').toISO();
+  return `[${currentTime}] [${information.level}]: ${information.message}`;
+});
 
 /**
  * Logger for the bot with split transports.
@@ -18,7 +30,9 @@ export default createLogger({
   transports: [
     new Transports.Console({
       level: 'debug',
-      format: combine(timestamp(), json()),
+      format: process.env.NODE_ENV === 'development'
+        ? combine(colorize(), consoleLogFormat)
+        : combine(timestamp(), json()),
     }),
     new Transports.DailyRotateFile({
       level: 'info',

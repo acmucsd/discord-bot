@@ -8,6 +8,7 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "tsc && NODE_ENV=development node dist/src/index.js",
     "start": "tsc && node dist/src/index.js"
   },
   "repository": {
