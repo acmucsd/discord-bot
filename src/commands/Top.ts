@@ -3,11 +3,12 @@ import got from 'got';
 import { chunk } from 'lodash';
 import { Embeds } from 'discord-paginationembed';
 import { v4 as newUUID } from 'uuid';
-import Command from '../Command';
-import { BotClient, User, UUIDv4 } from '../types';
 import {
   getCurrentQuarter, getCurrentYear, getQuarterBounds, getYearBounds,
-} from '../utils/quarterCalculator';
+} from 'ucsd-quarters-years';
+
+import Command from '../Command';
+import { BotClient, User, UUIDv4 } from '../types';
 import { validNumber } from '../utils/validType';
 import Logger from '../utils/Logger';
 
@@ -207,11 +208,19 @@ export default class Top extends Command {
     // We'll dynamically extract the start and end bounds for the portal API,
     // depending on type parameter. Portal API demands bounds to be given in
     // Unix seconds, so we'll convert.
-    const [startTime, endTime] = leaderboardType === 'quarter'
-      ? getQuarterBounds(getCurrentQuarter())
-      : getYearBounds(getCurrentYear());
-    const startBound = startTime.toSeconds();
-    const endBound = endTime.toSeconds();
+    const interval = leaderboardType === 'quarter'
+      ? getCurrentQuarter()
+      : getCurrentYear();
+
+    // We'll error out if by any change the quarters and years dataset is incomplete.
+    if (!interval) {
+      throw new Error('Current quarter does not exist in dataset! Please add current quarter (if existent) to dataset at https://github.com/acmucsd/ucsd-quarters-years');
+    }
+
+    // We'll need to convert from epoch milliseconds to seconds. We can use Luxon,
+    // but this is less bloat.
+    const startBound = Math.round(interval.start.getTime() / 1000);
+    const endBound = Math.round(interval.end.getTime() / 1000);
 
     // Query as usual.
     const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/leaderboard', {
