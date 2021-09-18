@@ -42,7 +42,17 @@ export default class Client extends DiscordClient implements BotClient {
    * @param portalAPIManager A PortalAPIManager class to run. Injected by TypeDI
    */
   constructor(private actionManager: ActionManager, private portalAPIManager: PortalAPIManager) {
-    super(configuration.clientOptions || {});
+    super(configuration.clientOptions || {
+      intents: [
+        'GUILDS',
+        'GUILD_INTEGRATIONS',
+        'GUILD_WEBHOOKS',
+        'GUILD_MESSAGES',
+        'DIRECT_MESSAGES',
+        'GUILD_MESSAGE_REACTIONS',
+        'DIRECT_MESSAGE_REACTIONS',
+      ],
+    });
     this.settings = configuration;
     // We absolutely need some envvars, so if they're not in our .env file, nuke the initialization.
     // We can throw Errors here to nuke the bot, since we don't have any catches higher up.
@@ -62,9 +72,6 @@ export default class Client extends DiscordClient implements BotClient {
     }
     this.settings.token = process.env.BOT_TOKEN;
     this.settings.prefix = process.env.BOT_PREFIX;
-    // "!" required here because Discord.js doesn't let you make this mandatory,
-    // so we need the "name" to be an optional assignment.
-    this.settings.presence.activity!.name = process.env.BOT_ACTIVITY;
     this.settings.maintainerID = process.env.MAINTAINER_USER_ID;
     this.settings.apiKeys.catAPI = process.env.CAT_API_KEY;
     this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
