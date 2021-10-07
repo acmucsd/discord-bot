@@ -115,8 +115,12 @@ export default abstract class Command {
      * @param interaction The Command Interaction to defer for later.
      * @returns The original command, supports method chaining.
      */
-    public async defer(interaction: CommandInteraction) {
-      interaction.deferReply();
+    public async defer(interaction: CommandInteraction, ephemeral?: boolean) {
+      if (ephemeral) {
+        await interaction.deferReply({ ephemeral: true });
+        return this;
+      }
+      await interaction.deferReply();
       return this;
     }
 
@@ -129,7 +133,7 @@ export default abstract class Command {
      * @returns The original command, supports method chaining.
      */
     public async edit(interaction: CommandInteraction, message: InteractionPayload) {
-      interaction.editReply(message);
+      await interaction.editReply(message);
       return this;
     }
 }
