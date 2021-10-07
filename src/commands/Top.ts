@@ -69,8 +69,7 @@ export default class Top extends Command {
    * - Create Embeds for each page of the leaderboard
    * - Create Pagination embed that encapsulates each other Embed as a set of pages
    *
-   * @param message The Message with the command call.
-   * @param args The Command arguments.
+   * @param interaction The Slash Command Interaction instance.
    */
   public async run(interaction: CommandInteraction): Promise<void> {
     await super.defer(interaction);

@@ -43,8 +43,7 @@ export default class Checkin extends Command {
    * - Build the Embeds
    * - Send them out!
    *
-   * @param message The Message with the command call.
-   * @param args The Command arguments.
+   * @param interaction The Slash Command Interaction instance.
    */
   public async run(interaction: CommandInteraction): Promise<void> {
     // Get isPublic argument.

@@ -38,7 +38,7 @@ export default class Coverup extends Command {
    * - Mark contents of message with spoiler tags or attachments
    * - Error gracefully if attachments too large for us
    *
-   * @param message Received Message.
+   * @param interaction The Slash Command Interaction instance.
    */
   public async run(interaction: CommandInteraction): Promise<void> {
     // Filter to only takes last message from command caller.
