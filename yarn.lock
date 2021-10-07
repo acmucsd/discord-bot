@@ -121,6 +121,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@psibean/discord.js-pagination@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@psibean/discord.js-pagination/-/discord.js-pagination-4.0.0.tgz#82bd630f87cbe9a37ed383f00cce29b23ea4bb02"
+  integrity sha512-uQTmpZ4yAe6UOsm0/Go3vQsh9khdSx+4gwwGULotm70kYuHlJ/RMmoREa9ESn+1hUsWizCxhFok3GdPi46aRxQ==
+
 "@sapphire/async-queue@^1.1.4", "@sapphire/async-queue@^1.1.5":
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/@sapphire/async-queue/-/async-queue-1.1.5.tgz#2a52774ad9c24b1e9be88f4a211e735419014e4e"
