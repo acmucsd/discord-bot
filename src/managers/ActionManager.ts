@@ -1,7 +1,9 @@
 import { Collection } from 'discord.js';
+import { REST } from '@discordjs/rest';
 import { Service } from 'typedi';
 import { join } from 'path';
 import { readdir, statSync } from 'fs';
+import { Routes } from 'discord-api-types/v9';
 import { BotClient } from '../types';
 import Command from '../Command';
 import Logger from '../utils/Logger';
@@ -30,13 +32,13 @@ export default class {
       // Get our commands directory from the settings.
       const { commands } = client.settings.paths;
 
+      // Instantiate an array to hold all the information necessary to register Slash Commands
+      // on Discord's API. Due to how finnicky Discord's API is, this has to be untyped.
+      const slashCommands: any[] = [];
+
       // Go through every file in that directory.
       readdir(commands, (err, files) => {
         if (err) Logger.error(err);
-
-        // Due to "help" not loading commands probably, we'll have to construct that last.
-        // Move "Help.ts" to end of "files" array.
-        files.push(files.splice(files.indexOf('Help.ts'), 1)[0]);
 
         // For every Command file...
         files.forEach(async (cmd) => {
@@ -59,11 +61,29 @@ export default class {
             const command: Command = new LoadedCommand(client);
 
             // If Command enabled, load it in our Client.
-            if (command.conf.enabled) {
+            // Also add to Slash Command registration payload.
+            if (command.conf.enabled && command.definition !== undefined) {
               this.commands.set(command.conf.name, command);
+              slashCommands.push(command.definition.toJSON());
             }
           }
         });
+
+        // Now we upload the Slash Command registration payload to Discord.
+        const restAPI = new REST({ version: '9' }).setToken(client.settings.token);
+
+        (async () => {
+          Logger.info('Loading Slash Commands on Discord Gateway...', {
+            eventType: 'slashCommandLoading',
+          });
+          await restAPI.put(
+            Routes.applicationCommands(client.settings.clientID),
+            { body: slashCommands },
+          );
+          Logger.info('Loaded Slash Commands on Discord Gateway!', {
+            eventType: 'slashCommandLoaded',
+          });
+        })();
       });
     }
 

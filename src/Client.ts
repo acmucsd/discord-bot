@@ -70,6 +70,14 @@ export default class Client extends DiscordClient implements BotClient {
       });
       throw new Error('Could not construct Client class: missing bot prefix in envvars');
     }
+    if (!process.env.CLIENT_ID) {
+      Logger.error('Could not construct Client class: missing app client ID in envvars', {
+        eventType: 'initError',
+        error: 'missing app client ID in envvars',
+      });
+      throw new Error('Could not construct Client class: missing app client ID in envvars');
+    }
+    this.settings.clientID = process.env.CLIENT_ID;
     this.settings.token = process.env.BOT_TOKEN;
     this.settings.prefix = process.env.BOT_PREFIX;
     this.settings.maintainerID = process.env.MAINTAINER_USER_ID;

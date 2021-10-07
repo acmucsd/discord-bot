@@ -105,6 +105,13 @@ export interface BotSettings {
      * Discord.js-specific Client options. Currently unused.
      */
     clientOptions?: ClientOptions;
+
+    /**
+     * Client ID of the application that BreadBot is made in.
+     *
+     * This has to be obtained from the Discord Developers Portal.
+     */
+    clientID: string;
     /**
      * ID of maintainer of bot.
      *

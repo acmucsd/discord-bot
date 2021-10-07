@@ -7,6 +7,7 @@ export default {
     username: '',
     password: '',
   },
+  clientID: '',
   clientOptions: {
     intents: [
       'GUILDS',
