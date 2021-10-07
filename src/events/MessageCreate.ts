@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Message as DiscordMessage } from 'discord.js';
-import Logger from '../utils/Logger';
 import { BotEvent, BotClient } from '../types';
 
 /**

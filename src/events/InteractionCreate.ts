@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { CommandInteraction, Interaction, Message as DiscordMessage } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import Logger from '../utils/Logger';
 import { BotEvent, BotClient } from '../types';
 
@@ -36,6 +36,33 @@ export default class InteractionCreate implements BotEvent {
     if (!command) {
       return;
     }
+
+    if (!interaction.member) {
+      Logger.error(`Slash Command ${command} received, but interaction author is null!`, {
+        eventType: 'nullSlashCommandUser',
+        command,
+      });
+      return;
+    }
+
+    const user = this.client.users.cache.get(interaction.member.user.id);
+
+    if (!user) {
+      Logger.error(`Slash Command ${command} received, but interaction member cannot be found!`, {
+        eventType: 'undefinedSlashCommandUser',
+        command,
+      });
+      return;
+    }
+
+    await user.fetch();
+
+    // Log usage of command.
+    Logger.info(`Slash Command '${interaction.commandName}' received from ${user.username} (ID: ${user.id}) with options ${JSON.stringify(interaction.options)}`, {
+      eventType: 'slashCommand',
+      command,
+      author: user,
+    });
 
     // ...then pass the interaction to the Command to run.
     command.run(interaction);
