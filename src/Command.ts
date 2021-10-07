@@ -1,7 +1,9 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { User, Message, Interaction, CommandInteraction } from 'discord.js';
 import {
-  AnyChannel, BotClient, CommandOptions, EmbedOrMessage,
+  CommandInteraction,
+} from 'discord.js';
+import {
+  BotClient, CommandOptions, InteractionPayload,
 } from './types';
 import Logger from './utils/Logger';
 
@@ -93,4 +95,41 @@ export default abstract class Command {
      * @param {string[]} args The arguments that got sent with the message.
      */
     public abstract run(interaction: CommandInteraction): Promise<void>;
+
+    /**
+     * Replies to a Command Interaction with a message of any kind.
+     * @param {CommandInteraction} interaction The Command Interaction instance to respond to.
+     * @param {InteractionPayload} message The message that will be sent.
+     * @returns {Promise<Command>} The original command, supports method chaining.
+     */
+    public async respond(interaction: CommandInteraction, message: InteractionPayload) {
+      await interaction.reply(message);
+      return this;
+    }
+
+    /**
+     * Defers the reply to the Command Interaction.
+     *
+     * The time limit for an Interaction is 3 seconds, unless you defer beforehand.
+     *
+     * @param interaction The Command Interaction to defer for later.
+     * @returns The original command, supports method chaining.
+     */
+    public async defer(interaction: CommandInteraction) {
+      interaction.deferReply();
+      return this;
+    }
+
+    /**
+     * Edits reply to the Command Interaction.
+     *
+     * This is required after deferring a reply, but not necessarily otherwise.
+     *
+     * @param interaction The Command Interaction to defer for later.
+     * @returns The original command, supports method chaining.
+     */
+    public async edit(interaction: CommandInteraction, message: InteractionPayload) {
+      interaction.editReply(message);
+      return this;
+    }
 }

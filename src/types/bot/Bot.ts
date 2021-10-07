@@ -5,10 +5,10 @@ import {
   PermissionString,
   PresenceData,
   ClientOptions,
-  MessageEmbed,
   Collection,
   NewsChannel,
-  MessageAttachment,
+  MessagePayload,
+  InteractionReplyOptions,
 } from 'discord.js';
 import Command from '../../Command';
 
@@ -180,4 +180,4 @@ export type AnyChannel = TextChannel | DMChannel | NewsChannel;
 /**
  * Wrapper type for Commands to be able to return proper Message responses.
  */
-export type EmbedOrMessage = MessageEmbed | MessageAttachment | string;
+export type InteractionPayload = string | MessagePayload | InteractionReplyOptions;
