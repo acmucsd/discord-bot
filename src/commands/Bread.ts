@@ -1,6 +1,7 @@
-import { Message, MessageAttachment } from 'discord.js';
+import { CommandInteraction, MessageAttachment } from 'discord.js';
 import { v4 as newUUID } from 'uuid';
 import got from 'got';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import Command from '../Command';
 import { BotClient, UUIDv4 } from '../types';
 import Logger from '../utils/Logger';
@@ -12,6 +13,9 @@ import Logger from '../utils/Logger';
  */
 export default class Bread extends Command {
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('bread')
+      .setDescription('Returns a random bread picture fetched from Unsplash. Notoriously inaccurate at classifying bread.');
     super(client, {
       name: 'bread',
       enabled: true,
@@ -19,10 +23,11 @@ export default class Bread extends Command {
       category: 'Picture',
       usage: client.settings.prefix.concat('bread'),
       requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-    });
+    }, definition);
   }
 
-  public async run(message: Message): Promise<void> {
+  public async run(interaction: CommandInteraction): Promise<void> {
+    await super.defer(interaction);
     try {
       // Fetch a random "bread" picture.
       // Look, Unsplash is wack.
@@ -32,7 +37,9 @@ export default class Bread extends Command {
         // Add a `.png` to the end of the URL, since Unsplash cuts it and we need it
         // for Discord to register the attachment as a picture and render it.
         const attachment = new MessageAttachment(`${breadPicture}.png`, 'bread.png');
-        await super.respond(message.channel, attachment);
+        await super.edit(interaction, {
+          files: [attachment],
+        });
       } else {
         // If the bread picture URL is undefined, log it.
         Logger.error('Error when returning response for \'bread\' command: undefined URL for image', {
@@ -41,19 +48,19 @@ export default class Bread extends Command {
           error: 'undefined URL for image',
         });
         // Alert the user.
-        await super.respond(message.channel, "I can't find a bread image right now. It's possible I got rate-limited (asked for too many bread pics this month).");
+        await super.edit(interaction, "I can't find a bread image right now. It's possible I got rate-limited (asked for too many bread pics this month).");
         return;
       }
     } catch (e) {
       // Log any other possible errors.
       const errorUUID: UUIDv4 = newUUID();
-      Logger.error(`Error whilst fetching image URL from Bread API: ${e.message}`, {
+      Logger.error(`Error whilst fetching image URL from Bread API: ${e}`, {
         eventType: 'interfaceError',
         interface: 'breadAPI',
         error: e,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when fetching from Unsplash. *(Error UUID: ${errorUUID})*`);
+      await super.edit(interaction, `An error occurred when fetching from Unsplash. *(Error UUID: ${errorUUID})*`);
     }
   }
 

@@ -1,6 +1,7 @@
-import { Message, MessageAttachment } from 'discord.js';
+import { CommandInteraction, MessageAttachment } from 'discord.js';
 import got from 'got';
 import { v4 as newUUID } from 'uuid';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import Command from '../Command';
 import Logger from '../utils/Logger';
 import { BotClient, UUIDv4 } from '../types';
@@ -12,6 +13,9 @@ import { BotClient, UUIDv4 } from '../types';
  */
 export default class Cat extends Command {
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('cat')
+      .setDescription('Returns a random cute cat picture fetched from The Cat API. (https://thecatapi.com/)');
     super(client, {
       name: 'cat',
       enabled: true,
@@ -19,10 +23,11 @@ export default class Cat extends Command {
       category: 'Picture',
       usage: client.settings.prefix.concat('cat'),
       requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-    });
+    }, definition);
   }
 
-  public async run(message: Message): Promise<void> {
+  public async run(interaction: CommandInteraction): Promise<void> {
+    await super.defer(interaction);
     try {
       // Fetch a random cat picture
       const catPicture: string = await this.getCatPictureURL();
@@ -30,7 +35,9 @@ export default class Cat extends Command {
       if (catPicture) {
         // Add the picture in an attachment and send it.
         const attachment = new MessageAttachment(catPicture);
-        await super.respond(message.channel, attachment);
+        await super.edit(interaction, {
+          files: [attachment],
+        });
       } else {
         // If the cat picture URL is undefined, log it.
         Logger.error('Error when returning response for \'cat\' command: undefined URL for image', {
@@ -39,19 +46,19 @@ export default class Cat extends Command {
           error: 'undefined URL for image',
         });
         // Alert the user.
-        await super.respond(message.channel, "I can't find a cat image right now. It's possible I got rate-limited (asked for too many cat pics this month).");
+        await super.edit(interaction, "I can't find a cat image right now. It's possible I got rate-limited (asked for too many cat pics this month).");
         return;
       }
     } catch (e) {
       // Log any other possible errors.
       const errorUUID: UUIDv4 = newUUID();
-      Logger.error(`Error whilst fetching image URL from Cat API: ${e.message}`, {
+      Logger.error(`Error whilst fetching image URL from Cat API: ${e}`, {
         eventType: 'interfaceError',
         interface: 'catAPI',
         error: e,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when hitting the Cat API. *(Error UUID: ${errorUUID})*`);
+      await super.edit(interaction, `An error occurred when hitting the Cat API. *(Error UUID: ${errorUUID})*`);
     }
   }
 

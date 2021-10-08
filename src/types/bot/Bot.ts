@@ -5,10 +5,10 @@ import {
   PermissionString,
   PresenceData,
   ClientOptions,
-  MessageEmbed,
   Collection,
   NewsChannel,
-  MessageAttachment,
+  MessagePayload,
+  InteractionReplyOptions,
 } from 'discord.js';
 import Command from '../../Command';
 
@@ -105,6 +105,13 @@ export interface BotSettings {
      * Discord.js-specific Client options. Currently unused.
      */
     clientOptions?: ClientOptions;
+
+    /**
+     * Client ID of the application that BreadBot is made in.
+     *
+     * This has to be obtained from the Discord Developers Portal.
+     */
+    clientID: string;
     /**
      * ID of maintainer of bot.
      *
@@ -173,4 +180,4 @@ export type AnyChannel = TextChannel | DMChannel | NewsChannel;
 /**
  * Wrapper type for Commands to be able to return proper Message responses.
  */
-export type EmbedOrMessage = MessageEmbed | MessageAttachment | string;
+export type InteractionPayload = string | MessagePayload | InteractionReplyOptions;

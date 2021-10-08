@@ -1,7 +1,8 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import got from 'got';
 import { DateTime, Interval } from 'luxon';
 import { v4 as newUUID } from 'uuid';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { BotClient, PortalEvent, UUIDv4 } from '../types';
 import Command from '../Command';
 import Logger from '../utils/Logger';
@@ -13,6 +14,11 @@ import Logger from '../utils/Logger';
  */
 export default class Checkin extends Command {
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('checkin')
+      .addBooleanOption((option) => option.setName('now').setDescription('If true, send public embed of checking code for live events!').setRequired(false))
+      .setDescription('Sends a DM with all check-in codes from today\'s events.');
+
     super(client, {
       name: 'checkin',
       boardRequired: true,
@@ -21,11 +27,11 @@ export default class Checkin extends Command {
       category: 'Utility',
       usage: client.settings.prefix.concat('checkin [now]'),
       requiredPermissions: ['SEND_MESSAGES'],
-    });
+    }, definition);
   }
 
   /**
-   * The workhorse of Top, this method performs error validation on the arguments, as well as
+   * The workhorse of Checkin, this method performs error validation on the arguments, as well as
    * constructing the Embed.
    *
    * In short, the steps taken are:
@@ -37,15 +43,15 @@ export default class Checkin extends Command {
    * - Build the Embeds
    * - Send them out!
    *
-   * @param message The Message with the command call.
-   * @param args The Command arguments.
+   * @param interaction The Slash Command Interaction instance.
    */
-  public async run(message: Message, args: string[]): Promise<void> {
-    const [isPublic] = args;
-    if (isPublic && isPublic !== 'now') {
-      // If we got any other argument other than `now`...
-      await super.respond(message.channel, `I only allow public checkin codes for live events. Try \`${this.client.settings.prefix.concat('checkin now')}\`.`);
-    }
+  public async run(interaction: CommandInteraction): Promise<void> {
+    // Get isPublic argument.
+    const isPublic = interaction.options.getBoolean('now') !== null ? interaction.options.getBoolean('now') : false;
+
+    // Defer the reply ephemerally only if it's a private command call.
+    await super.defer(interaction, !isPublic);
+
     // Get all future events marked in the portal API.
     try {
       const futureEvents = await this.getFutureEvents();
@@ -82,11 +88,14 @@ export default class Checkin extends Command {
       // We'll make sure to check if the required set of events by
       // command arugments is empty; if it is, just return "No events today!"
       if (!isPublic && todayEvents.length === 0) {
-        await super.respond(message.channel, 'No events today!');
+        await super.edit(interaction, {
+          content: 'No events today!',
+          ephemeral: true,
+        });
         return;
       }
-      if (isPublic === 'now' && liveEvents.length === 0) {
-        await super.respond(message.channel, 'No events right now!');
+      if (isPublic && liveEvents.length === 0) {
+        await super.edit(interaction, 'No events right now!');
         return;
       }
 
@@ -103,32 +112,42 @@ export default class Checkin extends Command {
       const privateEmbed = new MessageEmbed()
         .setTitle(':calendar_spiral: Today\'s Events')
         .setDescription(privateEmbedDescription)
-        .setColor('0x3498DB');
+        .setColor('BLUE');
 
       // Public Embed will be slightly more of a motivator, with a different title.
       const publicEmbed = new MessageEmbed()
         .setTitle(':calendar_spiral: Don\'t forget to check in!')
         .setDescription(publicEmbedDescription)
-        .setColor('0x3498DB');
+        .setColor('BLUE');
 
       // Now we finally check the command argument.
       // If we just had `checkin` in our call, no arguments...
       if (!isPublic) {
-        await message.author.send(privateEmbed);
+        const author = await this.client.users.fetch(interaction.member!.user.id);
+        await author.send({
+          embeds: [privateEmbed],
+        });
+        await super.edit(interaction, {
+          content: 'Check your DM.',
+          ephemeral: true,
+        });
       } else {
-        await super.respond(message.channel, publicEmbed);
+        await super.edit(interaction, {
+          embeds: [publicEmbed],
+        });
       }
     } catch (e) {
+      const error = e as any;
       // Similarly to Top, only errors I could find here involve the API,
       // so if anything pops up, log the API errors.
       const errorUUID: UUIDv4 = newUUID();
-      Logger.error(`Error whilst fetching future events: ${e.message}`, {
+      Logger.error(`Error whilst fetching future events: ${error.message}`, {
         eventType: 'interfaceError',
         interface: 'portalAPI',
-        error: e,
+        error,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
+      await super.edit(interaction, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
     }
   }
 

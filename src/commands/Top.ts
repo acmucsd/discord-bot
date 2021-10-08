@@ -1,15 +1,16 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import got from 'got';
 import { chunk } from 'lodash';
-import { Embeds } from 'discord-paginationembed';
+
 import { v4 as newUUID } from 'uuid';
 import {
-  getCurrentQuarter, getCurrentYear, getQuarterBounds, getYearBounds,
+  getCurrentQuarter, getCurrentYear,
 } from 'ucsd-quarters-years';
 
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { ButtonPaginator } from '@psibean/discord.js-pagination';
 import Command from '../Command';
 import { BotClient, User, UUIDv4 } from '../types';
-import { validNumber } from '../utils/validType';
 import Logger from '../utils/Logger';
 
 /**
@@ -36,6 +37,15 @@ export default class Top extends Command {
    * @param client The Client we are initializing this Command for.
    */
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('top')
+      .addIntegerOption((option) => option.setName('members').setDescription('Number of members to list.'))
+      .addStringOption((option) => option.setName('type')
+        .setDescription('Type of leaderboard (All-Time, Quarterly, Yearly)')
+        .addChoice('Yearly', 'Yearly')
+        .addChoice('Quarterly', 'Quarterly')
+        .addChoice('All-Time', 'All-Time'))
+      .setDescription('Shows the top N members on the Membership Portal leaderboard.');
     super(client, {
       name: 'top',
       enabled: true,
@@ -43,7 +53,7 @@ export default class Top extends Command {
       category: 'Information',
       usage: client.settings.prefix.concat('top [`number`: min 3, max 100] [type: "quarter" | "year"]'),
       requiredPermissions: ['SEND_MESSAGES'],
-    });
+    }, definition);
   }
 
   /**
@@ -59,34 +69,35 @@ export default class Top extends Command {
    * - Create Embeds for each page of the leaderboard
    * - Create Pagination embed that encapsulates each other Embed as a set of pages
    *
-   * @param message The Message with the command call.
-   * @param args The Command arguments.
+   * @param interaction The Slash Command Interaction instance.
    */
-  public async run(message: Message, args: string[]): Promise<void> {
+  public async run(interaction: CommandInteraction): Promise<void> {
+    await super.defer(interaction);
     // deconstruct possible arguments
-    const [size, type] = args;
-    // if size given and not a valid number...
-    if (size !== undefined && !validNumber(size)) {
-      await super.respond(message.channel, "You didn't pass a valid number as the first argument!");
+    // default for size is 10
+    let leaderboardSize: number | null = 10;
+    if (interaction.options.getInteger('members') !== null) {
+      leaderboardSize = interaction.options.getInteger('members');
+    }
+    if (leaderboardSize === null) {
+      await super.edit(interaction, "I failed with arguments? That's weird.");
       return;
     }
-    // if size given and not between 3 and 100...
-    if (size !== undefined
-        && (parseInt(size, 10) <= 2
-        || parseInt(size, 10) > 100)) {
-      await super.respond(message.channel, 'Maximum leaderboard size should be between 3 and 100!');
-      return;
+    // default for type is 'all-time'
+    let leaderboardType: string | null = 'All-Time';
+    if (interaction.options.getString('type') !== null) {
+      leaderboardType = interaction.options.getString('type');
     }
-    // if type of leaderboard given and not 'quarter' or 'year'...
-    if (type !== undefined && !(type === 'quarter' || type === 'year')) {
-      await super.respond(message.channel, 'Optional argument for leaderboard type must be `quarter` or `year`!');
+    if (leaderboardType === null) {
+      await super.edit(interaction, "I failed with arguments? That's weird.");
       return;
     }
 
-    // Final size of leaderboard, with default of 10 if no argument given.
-    const leaderboardSize = size === undefined ? 10 : parseInt(size, 10);
-    // Final type of leaderboard, with default of 'all-time' if no argument given.
-    const leaderboardType: 'quarter' | 'year' | 'all-time' = type === undefined ? 'all-time' : type;
+    // if size given and not between 3 and 100...
+    if (leaderboardSize < 3 || leaderboardSize > 100) {
+      await super.edit(interaction, 'Leaderboard size should be between 3 and 100!');
+      return;
+    }
 
     try {
       // Get the leaderboard.
@@ -137,7 +148,7 @@ export default class Top extends Command {
         // Essentially, the .setTitle() call has a weird string just making "quarter", "year", and
         // "all-time" be their capitalized versions.
         const leaderboardPageEmbed = new MessageEmbed()
-          .setTitle(`:bar_chart: ${leaderboardType === 'all-time' ? 'All-Time' : leaderboardType.charAt(0).toUpperCase() + leaderboardType.slice(1)} Leaderboard`)
+          .setTitle(`:bar_chart: ${leaderboardType} Leaderboard`)
           .setFooter('Data: Membership Portal')
           .setDescription(leaderboardPageLines.join('\n'));
         leaderboardEmbeds.push(leaderboardPageEmbed);
@@ -145,31 +156,23 @@ export default class Top extends Command {
 
       // Once all the pages are done, generate the Pagination Embed, and only
       // allow the command caller to modify the pages using Reactions.
-      const outputEmbed = new Embeds()
-        .setArray(leaderboardEmbeds)
-        .setAuthorizedUsers([message.author.id])
-        // temporary "as any" cast until Discord Pagination Embed updates its NPM version to include
-        // NewsChannel as a type in the parameter. Old package versioning FTW.
-        .setChannel(message.channel as any)
-        .setPageIndicator(false)
-        .setPage(1);
-
-      await message.delete();
-      await outputEmbed.build();
+      const outputPaginator = new ButtonPaginator(interaction, { pages: leaderboardEmbeds });
+      await outputPaginator.send();
       return;
     } catch (e) {
+      const error = e as any;
       // The only errors I've found during testing involve API calls to the Membership Portal.
       // This covers my butt in terms of errors, but I'm sure there might be different kinds
       // of errors in the future. I'll update this logging function with more clear messaging
       // if by any chance we get other kinds of errors.
       const errorUUID: UUIDv4 = newUUID();
-      Logger.error(`Error whilst extracting leaderboard information: ${e.message}`, {
+      Logger.error(`Error whilst extracting leaderboard information: ${error.message}`, {
         eventType: 'interfaceError',
         interface: 'portalAPI',
-        error: e,
+        error,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
+      await super.edit(interaction, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
     }
   }
 
@@ -180,15 +183,15 @@ export default class Top extends Command {
    * up to `limit` members. `leaderboardType` denotes what bounds to set for the leaderboard call.
    *
    * @param limit The number of top members to pull from the leaderboard.
-   * @param leaderboardType The type of leaderboard. "All-time" denotes no time bounds on the API
-   * call, whereas "quarter" and "all-time" dynamically find the current academic quarter and year
+   * @param leaderboardType The type of leaderboard. "All-Time" denotes no time bounds on the API
+   * call, whereas "Quarterly" and "Yearly" dynamically find the current academic quarter and year
    * we are in and use their dates as time bounds for the API call.
    * @private
    */
-  private async getLeaderboard(limit: number, leaderboardType: 'quarter' | 'year' | 'all-time'): Promise<User[]> {
-    // If we want the "all-time" leaderboard, we don't need bounds, so just call the API
+  private async getLeaderboard(limit: number, leaderboardType: string): Promise<User[]> {
+    // If we want the "All-Time" leaderboard, we don't need bounds, so just call the API
     // with the limit parameter.
-    if (leaderboardType === 'all-time') {
+    if (leaderboardType === 'All-Time') {
       const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/leaderboard', {
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +211,7 @@ export default class Top extends Command {
     // We'll dynamically extract the start and end bounds for the portal API,
     // depending on type parameter. Portal API demands bounds to be given in
     // Unix seconds, so we'll convert.
-    const interval = leaderboardType === 'quarter'
+    const interval = leaderboardType === 'Quarterly'
       ? getCurrentQuarter()
       : getCurrentYear();
 

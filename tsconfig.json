@@ -20,7 +20,7 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "src"
+    "src", "src/jsModuleDecs.d.ts"
   ],
   "exclude": [
     "dist",

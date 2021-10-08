@@ -1,4 +1,5 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import got from 'got';
 import { v4 as newUUID } from 'uuid';
 import Command from '../Command';
@@ -14,6 +15,13 @@ import { validURL } from '../utils/validType';
  */
 export default class ACMURL extends Command {
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('acmurl')
+      .addStringOption((option) => option.setName('shortlink').setDescription('The short ID of the url (eg. "discord")').setRequired(true))
+      .addStringOption((option) => option.setName('longlink').setDescription('The URL to shorten.').setRequired(true))
+      .addStringOption((option) => option.setName('description').setDescription('The description of the link in ACMURL\'s dashboard.'))
+      .setDescription('Shortens the provided link into an ACMURL link.');
+
     super(client, {
       name: 'acmurl',
       boardRequired: true,
@@ -22,29 +30,32 @@ export default class ACMURL extends Command {
       category: 'Utility',
       usage: client.settings.prefix.concat('acmurl <shortlink> <longlink> [description]'),
       requiredPermissions: ['SEND_MESSAGES'],
-    });
+    }, definition);
   }
 
-  public async run(message: Message, args: string[]): Promise<void> {
+  public async run(interaction: CommandInteraction): Promise<void> {
+    // Let's defer the reply first
+    await super.defer(interaction);
     // Alright, this is the biggest command by far.
     // This might be able to be split better, but who knows?
     //
     // Get command arguments. Make description tokens all together in an array.
-    const [shortlink, longlink, ...descriptionTokens] = args;
-    // Join description of URL.
-    const description = descriptionTokens.join(' ');
+    const shortlink = interaction.options.getString('shortlink', true);
+    const longlink = interaction.options.getString('longlink', true);
+    const description = interaction.options.getString('description');
+
     // Set title of URL, or undefined if initial array did not exist.
     const linkTitle = description || `Discord Bot - ${shortlink}`; // optional argument or slashtag
 
     // If we didn't get our required arguments...
     if (!shortlink || !longlink) {
-      await super.respond(message.channel, 'You must provide both the long link and the short link!');
+      await super.edit(interaction, 'You must provide both the long link and the short link!');
       return;
     }
 
     // If provided long link is not a valid URL...
     if (!validURL(longlink)) {
-      await super.respond(message.channel, 'The long link must be a valid HTTP/HTTPS URL!');
+      await super.edit(interaction, 'The long link must be a valid HTTP/HTTPS URL!');
       return;
     }
 
@@ -56,16 +67,20 @@ export default class ACMURL extends Command {
         .setTitle('Set shortened link!')
         .setDescription(`Short link: ${shortURL}`)
         .setURL(shortURL)
-        .setColor('0x3498DB');
-      await super.respond(message.channel, shortenEmbed);
+        .setColor('BLUE');
+      await super.edit(interaction, {
+        embeds: [shortenEmbed],
+      });
       return;
     } catch (e) {
       // We might error out if an ACMURL already exists with the provided shortlink.
       // We'll attempt to handle that by updating the ACMURL.
       const errorUUID: UUIDv4 = newUUID();
 
+      const error = e as any;
+
       // If the error we get is specifically that a ACMURL already existed.
-      if (e.message === 'error:keyword') {
+      if (error.message === 'error:keyword') {
         try {
           // Make a new one and return the old long link and new ACMURL
           const [previousURL, newURL] = await this.handleExistingACMURL(
@@ -78,9 +93,12 @@ export default class ACMURL extends Command {
               `Short link: ${newURL}\nPreviously shortened link: ${previousURL}`,
             )
             .setURL(newURL)
-            .setColor('0x3498DB');
-          await super.respond(message.channel, shortenEmbed);
-        } catch (updateError) {
+            .setColor('BLUE');
+          await super.edit(interaction, {
+            embeds: [shortenEmbed],
+          });
+        } catch (e2) {
+          const updateError = e2 as any;
           // If by any chance there's an error when updating the ACMURL, log it and return.
           Logger.error(`Error whilst updating short URL on YOURLS API: ${updateError.message}`, {
             eventType: 'interfaceError',
@@ -88,18 +106,18 @@ export default class ACMURL extends Command {
             error: updateError,
             uuid: errorUUID,
           });
-          await super.respond(message.channel, `An error occurred when attempting to update the short URL. *(Error UUID: ${errorUUID})*`);
+          await super.edit(interaction, `An error occurred when attempting to update the short URL. *(Error UUID: ${errorUUID})*`);
         }
       } else {
         // If the error we had initially when adding the ACMURL is any other error,
         // log it and return.
-        Logger.error(`Error whilst creating short URL on YOURLS API: ${e.message}`, {
+        Logger.error(`Error whilst creating short URL on YOURLS API: ${error.message}`, {
           eventType: 'interfaceError',
           interface: 'YOURLS',
-          error: e,
+          error,
           uuid: errorUUID,
         });
-        await super.respond(message.channel, `An error occurred when shortening the URL. *(Error UUID: ${errorUUID})*`);
+        await super.edit(interaction, `An error occurred when shortening the URL. *(Error UUID: ${errorUUID})*`);
       }
     }
   }

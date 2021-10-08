@@ -1,6 +1,7 @@
-import { Message, MessageAttachment } from 'discord.js';
+import { CommandInteraction, MessageAttachment } from 'discord.js';
 import got from 'got';
 import { v4 as newUUID } from 'uuid';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import Command from '../Command';
 import Logger from '../utils/Logger';
 import { BotClient } from '../types';
@@ -12,6 +13,10 @@ import { BotClient } from '../types';
  */
 export default class Dog extends Command {
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('dog')
+      .setDescription('Returns a random cute dog picture fetched from the Dog API. (https://dog.ceo/dog-api/)');
+
     super(client, {
       name: 'dog',
       enabled: true,
@@ -19,10 +24,11 @@ export default class Dog extends Command {
       category: 'Picture',
       usage: client.settings.prefix.concat('dog'),
       requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-    });
+    }, definition);
   }
 
-  public async run(message: Message): Promise<void> {
+  public async run(interaction: CommandInteraction): Promise<void> {
+    await super.defer(interaction);
     try {
       // Fetch a random dog picture.
       const dogPicture = await Dog.getDogPictureURL();
@@ -30,7 +36,9 @@ export default class Dog extends Command {
       if (dogPicture) {
         // Add the picture in an attachment and send it.
         const attachment = new MessageAttachment(dogPicture);
-        await super.respond(message.channel, attachment);
+        await super.edit(interaction, {
+          files: [attachment],
+        });
       } else {
         // If the dog picture URL is undefined, log it.
         Logger.error('Error when returning response for \'dog\' command: undefined URL for image', {
@@ -39,7 +47,7 @@ export default class Dog extends Command {
           error: 'undefined URL for image',
         });
         // Alert the user.
-        await super.respond(message.channel, "I can't find a dog image right now. This shouldn't happen. Blame my maintainer.");
+        await super.edit(interaction, "I can't find a dog image right now. This shouldn't happen. Blame my maintainer.");
         return;
       }
     } catch (e) {
@@ -51,7 +59,7 @@ export default class Dog extends Command {
         error: e,
         uuid: errorUUID,
       });
-      await super.respond(message.channel, `An error occurred when hitting the Dog API. *(Error UUID: ${errorUUID})*`);
+      await super.edit(interaction, `An error occurred when hitting the Dog API. *(Error UUID: ${errorUUID})*`);
     }
   }
 

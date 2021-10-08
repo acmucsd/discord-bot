@@ -1,4 +1,5 @@
-import { Message } from 'discord.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { CommandInteraction } from 'discord.js';
 import Command from '../Command';
 import { BotClient } from '../types';
 
@@ -9,17 +10,21 @@ import { BotClient } from '../types';
  */
 export default class Ping extends Command {
   constructor(client: BotClient) {
+    const definition = new SlashCommandBuilder()
+      .setName('ping')
+      .setDescription('Pings the bot.');
+
     super(client, {
       name: 'ping',
-      enabled: false,
+      enabled: true,
       description: 'Pings the bot.',
       category: 'Information',
       usage: client.settings.prefix.concat('ping'),
       requiredPermissions: ['SEND_MESSAGES'],
-    });
+    }, definition);
   }
 
-  public async run(message: Message): Promise<void> {
-    await super.respond(message.channel, 'Pong!');
+  public async run(interaction: CommandInteraction): Promise<void> {
+    await super.respond(interaction, 'Pong!');
   }
 }
