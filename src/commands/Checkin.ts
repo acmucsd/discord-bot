@@ -1,5 +1,5 @@
 import {
-  CommandInteraction, MessageAttachment, MessageEmbed, MessagePayload,
+  CommandInteraction, MessageAttachment, MessageEmbed,
 } from 'discord.js';
 import got from 'got';
 import { DateTime, Interval } from 'luxon';
