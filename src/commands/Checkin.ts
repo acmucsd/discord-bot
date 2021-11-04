@@ -23,7 +23,7 @@ export default class Checkin extends Command {
       .setName('checkin')
       .addBooleanOption((option) => option.setName('now').setDescription('If true, send public embed of checking code for live events!').setRequired(false))
       .addBooleanOption((option) => option.setName('qr').setDescription('If possible, include a QR code for Express Check-In in embed.').setRequired(false))
-      .setDescription('Sends a DM ot embed with all check-in codes from today\'s events.');
+      .setDescription('Sends a DM or embed with all check-in codes from today\'s events. Includes Express Checkin QR code!');
 
     super(client, {
       name: 'checkin',
@@ -57,7 +57,8 @@ export default class Checkin extends Command {
     const qrArgument = interaction.options.getBoolean('qr');
 
     const isPublic = nowArgument !== null ? nowArgument : false;
-    const needsQr = qrArgument !== null ? qrArgument : false;
+    // By default, we want to include QR codes.
+    const needsQr = qrArgument !== null ? qrArgument : true;
 
     // Defer the reply ephemerally only if it's a private command call.
     await super.defer(interaction, !isPublic);
