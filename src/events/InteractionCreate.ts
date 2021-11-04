@@ -64,6 +64,10 @@ export default class InteractionCreate implements BotEvent {
       author: user,
     });
 
+    if (!command.canRun(interaction)) {
+      return;
+    }
+
     // ...then pass the interaction to the Command to run.
     command.run(interaction);
   }
