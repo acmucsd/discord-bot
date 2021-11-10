@@ -222,8 +222,10 @@ export default class Checkin extends Command {
           // Add white padding of 30px around the picture. Also add the name
           // of the event to the image to differentiate between event QR codes
           // (if multiple events in one day) and offset the title to fit in "quiet zone".
+          //
+          // Also trim title to about 35 characters so we can fit it in the QR code nicely.
           quietZone: 40,
-          title: event.title,
+          title: event.title.substring(0, 35).concat('...'),
           titleTop: -20,
           // Add a subtitle for the literal check-in code as well, so you can read it
           // if desired without scanning the QR code.
