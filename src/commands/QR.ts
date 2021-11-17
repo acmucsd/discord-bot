@@ -14,6 +14,7 @@ export default class QR extends Command {
     const definition = new SlashCommandBuilder()
       .setName('qr')
       .addStringOption((option) => option.setName('content').setDescription('The content to put in the QR code.').setRequired(true))
+      .addBooleanOption((option) => option.setName('title').setDescription('Whether to include content as title or not.').setRequired(false))
       .setDescription('Generates a QR code with the provided text in it. Includes ACM logo!');
 
     super(client, {
@@ -22,7 +23,7 @@ export default class QR extends Command {
       enabled: true,
       description: 'Generates an ACM-branded QR code with a provided text in it.',
       category: 'Utility',
-      usage: client.settings.prefix.concat('qr <text>'),
+      usage: client.settings.prefix.concat('qr <text> [include text]'),
       requiredPermissions: ['SEND_MESSAGES'],
     }, definition);
   }
@@ -34,8 +35,10 @@ export default class QR extends Command {
    * @param interaction The Slash Command Interaction instance.
    */
   public async run(interaction: CommandInteraction): Promise<void> {
-    // Get the content of the QR code from arguments.
+    // Get all the arguments.
     const content = interaction.options.getString('content', true);
+    const titleArgument = interaction.options.getBoolean('title');
+    const includeContentAsTitle = titleArgument !== null ? titleArgument : true;
 
     // Defer the reply so we can have time to make the QR code.
     await super.defer(interaction);
@@ -43,6 +46,7 @@ export default class QR extends Command {
     // Make the QR code.
     //
     // See Checkin.ts on how QR code arguments work.
+    //
     const qrCode = new QRCode({
       text: content,
       colorDark: '#000000',
@@ -51,6 +55,11 @@ export default class QR extends Command {
       logo: 'src/assets/acm-qr-logo.png',
       logoBackgroundTransparent: false,
       quietZone: 30,
+      // Conditionally add the title to the QR code.
+      ...(includeContentAsTitle && {
+        title: content.substring(0, 25) === content ? content : content.substring(0, 25).concat('...'),
+        titleTop: -10,
+      }),
     });
 
     // Make the Discord attachment for the QR code.
