@@ -225,7 +225,7 @@ export default class Checkin extends Command {
           //
           // Also trim title to about 35 characters so we can fit it in the QR code nicely.
           quietZone: 40,
-          title: event.title.substring(0, 35).concat('...'),
+          title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
           titleTop: -20,
           // Add a subtitle for the literal check-in code as well, so you can read it
           // if desired without scanning the QR code.
