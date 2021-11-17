@@ -57,7 +57,7 @@ export default class QR extends Command {
       quietZone: 30,
       // Conditionally add the title to the QR code.
       ...(includeContentAsTitle && {
-        title: content.substring(0, 25) === content ? content : content.substring(0, 25).concat('...'),
+        title: content.substring(0, 36) === content ? content : content.substring(0, 36).concat('...'),
         titleTop: -10,
       }),
     });
