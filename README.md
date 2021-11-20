@@ -8,8 +8,8 @@ BreadBot is quick to install. Node v14 or higher is required.
 
 ``` sh
 git clone https://github.com/acmucsd/discord-bot
-cd discord-bot/
-npm install
+cd discord-bot
+yarn
 ```
 
 # Configuration
@@ -28,7 +28,7 @@ may check out a tutorial of how to do it
 To run, simply:
 
 ``` sh
-npm start
+yarn start
 ```
 
 ## Developing
