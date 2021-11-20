@@ -46,9 +46,9 @@ Once you're done, make sure that:
 - You have proper logging for any errors and commands. You can find good
 examples of logging in `src/Commands/ACMURL.ts`, as it has the most logging out
 of all the other commands.
-- You've ran your codebase through the linter by running `npm run lint:fix`.
+- You've ran your codebase through the linter by running `yarn run lint:fix`.
   CI will check for this.
-- You've tested the bot's functionality by running `npm start` in a testing
+- You've tested the bot's functionality by running `yarn start` in a testing
 server. This isn't necessary, as Dev Team will likely test new functionality,
 but it's good to give it a shot for local debugging.
 
