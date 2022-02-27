@@ -14,7 +14,7 @@ export default class QR extends Command {
     const definition = new SlashCommandBuilder()
       .setName('qr')
       .addStringOption((option) => option.setName('content').setDescription('The content to put in the QR code.').setRequired(true))
-      .addBooleanOption((option) => option.setName('title').setDescription('Whether to include content as title or not.').setRequired(false))
+      .addStringOption((option) => option.setName('title').setDescription('The title of the QR. If empty, will use URL of QR code as title.').setRequired(false))
       .setDescription('Generates a QR code with the provided text in it. Includes ACM logo!');
 
     super(client, {
@@ -23,7 +23,7 @@ export default class QR extends Command {
       enabled: true,
       description: 'Generates an ACM-branded QR code with a provided text in it.',
       category: 'Utility',
-      usage: client.settings.prefix.concat('qr <text> [include text]'),
+      usage: client.settings.prefix.concat('qr <text> [title text]'),
       requiredPermissions: ['SEND_MESSAGES'],
     }, definition);
   }
@@ -37,8 +37,8 @@ export default class QR extends Command {
   public async run(interaction: CommandInteraction): Promise<void> {
     // Get all the arguments.
     const content = interaction.options.getString('content', true);
-    const titleArgument = interaction.options.getBoolean('title');
-    const includeContentAsTitle = titleArgument !== null ? titleArgument : true;
+    const titleArgument = interaction.options.getString('title');
+    const customTitle = titleArgument !== null;
 
     // Defer the reply so we can have time to make the QR code.
     await super.defer(interaction);
@@ -56,7 +56,11 @@ export default class QR extends Command {
       logoBackgroundTransparent: false,
       quietZone: 30,
       // Conditionally add the title to the QR code.
-      ...(includeContentAsTitle && {
+      // If the title is custom, include it
+      ...(customTitle ? {
+        title: titleArgument.substring(0, 36) === titleArgument ? titleArgument : titleArgument.substring(0, 36).concat('...'),
+        titleTop: -10,
+      } : {
         title: content.substring(0, 36) === content ? content : content.substring(0, 36).concat('...'),
         titleTop: -10,
       }),
