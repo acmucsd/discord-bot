@@ -58,7 +58,7 @@ export default class InteractionCreate implements BotEvent {
     await user.fetch();
 
     // Log usage of command.
-    Logger.info(`Slash Command '${interaction.commandName}' received from ${user.username} (ID: ${user.id}) with options ${JSON.stringify(interaction.options)}`, {
+    Logger.info(`Slash Command '${interaction.commandName}' received from ${user.username} (ID: ${user.id}).`, {
       eventType: 'slashCommand',
       command,
       author: user,
