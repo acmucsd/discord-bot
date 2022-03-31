@@ -79,7 +79,7 @@ export default class Everyone extends Command {
    * @param guild The guild ID. The guild icon must be downloaded before running this command.
    * @param count The ping count to put on the image.
    */
-  public static generatePingIcon(guild: string, count: number): string {
+  public static async generatePingIcon(guild: string, count: number): Promise<string> {
     // We'll crop our number for the image generation. If higher
     // than 10000, we'll stop.
     const pingText = count > 9999 ? '9999+' : count.toString();
@@ -149,16 +149,16 @@ export default class Everyone extends Command {
         break;
     }
 
-    // Process and write the image
-    image.write(`guild_pics/${guild}_ping.png`, async (err) => {
-      if (err) {
-        throw new Error(`Could not write image with ping on it: ${err}`);
-      }
+    // Resize and write the image. We need to wrap the callback with a Promise, though.
+    return new Promise((resolve, reject) => {
+      image.write(`guild_pics/${guild}_ping.png`, (err) => {
+        if (err) {
+          reject(new Error(`Could not write image with ping on it: ${err}`));
+        }
+        const imageEncoding = readFileSync(`guild_pics/${guild}_ping.png`, { encoding: 'base64' });
+        resolve(imageEncoding);
+      });
     });
-
-    // Get the Base64 encoded version of the image.
-    const imageEncoding = readFileSync(`guild_pics/${guild}_ping.png`, { encoding: 'base64' });
-    return imageEncoding;
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -170,7 +170,7 @@ export default class Everyone extends Command {
     const { guild } = interaction;
     if (guild === null) {
       // Not a guild, we can't change icons.
-      await super.respond(interaction, { content: "I can't change icons here, sorry." });
+      await super.edit(interaction, { content: "I can't change icons here, sorry." });
       return;
     }
 
@@ -181,7 +181,7 @@ export default class Everyone extends Command {
       // now - lastCall = ...
       const { minutes } = now.diff(lastCall, ['minutes']).toObject();
       if (minutes !== undefined && minutes < 5) {
-        await super.respond(interaction, { content: "Just give it a few minutes; we don't want too many pings." });
+        await super.edit(interaction, { content: "Just give it a few minutes; we don't want too many pings." });
         return;
       }
     }
@@ -218,26 +218,27 @@ export default class Everyone extends Command {
 
       // We'll also want to resize the icon once we're done,
       // since our future ImageMagick finagling won't work without it.
-      let goodSave = true;
-      ImageMagick(`guild_pics/${currentGuildID}.png`)
-        .resize(800, 800)
-        .write(`guild_pics/${currentGuildID}.png`, async (err) => {
-          if (err) {
-            const uuid = newUUID();
-            Logger.error('Could not save resized guild icon!', {
-              eventType: 'interfaceError',
-              interface: 'GM',
-              uuid,
-            });
-            await super.respond(interaction, `Something went wrong. Not sure. *(Error UUID: ${uuid})*`);
-            goodSave = false;
-          }
-        });
-      if (!goodSave) {
-        return;
-      }
+      const saveFilePromise: Promise<void> = new Promise((resolve, reject) => {
+        ImageMagick(`guild_pics/${currentGuildID}.png`)
+          .resize(800, 800)
+          .write(`guild_pics/${currentGuildID}.png`, async (err) => {
+            if (err) {
+              const uuid = newUUID();
+              Logger.error('Could not save resized guild icon!', {
+                eventType: 'interfaceError',
+                interface: 'GM',
+                uuid,
+              });
+              await super.respond(interaction, `Something went wrong. Not sure. *(Error UUID: ${uuid})*`);
+              reject(new Error(`Bad error: ${err}`));
+            }
+            resolve();
+          });
+      });
+
+      await saveFilePromise;
     } else if (pingCount > 10000) {
-      await super.respond(interaction, { content: "Y'all have pinged enough 👀" });
+      await super.edit(interaction, { content: "Y'all have pinged enough 👀" });
       return;
     }
 
@@ -247,13 +248,14 @@ export default class Everyone extends Command {
 
     // Now we have the image, we can now generate it.
     // Just call our other function as well. Make it easy on ourselves.
-    const newIcon = Everyone.generatePingIcon(currentGuildID, newPingCount);
+    const newIcon = await Everyone.generatePingIcon(currentGuildID, newPingCount);
+    const newIconBuffer = Buffer.from(newIcon, 'base64');
 
     // Set the new icon!
     const fullGuild = await guild.fetch();
-    fullGuild.setIcon(newIcon, "April Fool's Prank");
+    fullGuild.setIcon(newIconBuffer, "April Fool's Prank");
 
     // Ping the person letting them know they've changed the icon.
-    await super.respond(interaction, { content: '🤨' });
+    await super.edit(interaction, { content: '🤨' });
   }
 }
