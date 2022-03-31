@@ -30,6 +30,7 @@
     "discord.js": "^13.1.0",
     "dotenv": "^8.2.0",
     "easyqrcodejs-nodejs": "^4.4.0",
+    "gm": "^1.23.1",
     "got": "^11.8.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
@@ -44,6 +45,7 @@
     "winston-daily-rotate-file": "^4.5.0"
   },
   "devDependencies": {
+    "@types/gm": "^1.18.11",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/lodash": "^4.14.168",
     "@types/luxon": "^1.26.2",
