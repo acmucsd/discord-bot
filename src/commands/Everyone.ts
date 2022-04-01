@@ -24,7 +24,7 @@ const pipeline = promisify(stream.pipeline);
 const ImageMagick = gm.subClass({ imageMagick: true });
 
 /**
- * April Fool's 2022 Command.
+ * April Fools' 2022 Command.
  *
  * This Command changes the guild icon to the exact same one, but one
  * that looks like everyone got pinged. However, the more this Command
@@ -269,7 +269,7 @@ export default class Everyone extends Command {
 
     // Set the new icon!
     const fullGuild = await guild.fetch();
-    fullGuild.setIcon(newIconBuffer, "April Fool's Prank");
+    fullGuild.setIcon(newIconBuffer, "April Fools' Prank");
 
     // Ping the person letting them know they've changed the icon.
     await super.edit(interaction, { content: '🤨' });
