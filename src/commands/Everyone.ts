@@ -89,63 +89,79 @@ export default class Everyone extends Command {
 
     // Depending on the number of pings we currently have to do, we'll want
     // to have a smaller or bigger red "pill" to hold the number, so we'll
-    // check the length here and execute those changes here.
+    // check the number of digits here and add the pill to the icon here.
+    //
+    // Note that ALL of the draw values are hardcoded; we could programatically
+    // calculate how big the text should be to fit the circle, but this is a one-off,
+    // it's good enough as it is.
+    //
+    // As an experiment, perhaps this can be a "to-do" thing.
     switch (pingText.length) {
       case 1:
         // 1-digit number of pings. Just use a circle.
+        // These are ImageMagick primitives, we'll explain one-by-one.
+        // First get the fill and stroke set up for the pill itself.
+        // Red fill...
         image = image.fill('#EF4747')
-          .stroke('#000000', 20)
-          .drawCircle(600, 600, 600, 500)
+          // Black stroke...
+          .stroke('#000000', 35)
+          // Then draw the circle via coordinates
+          .drawCircle(530, 620, 670, 650)
           .stroke('#FFFFFF', 2)
           .fill('#FFFFFF')
-          .font('Arial', 150)
-          .drawText(555, 653, `${pingText}`);
+          // Set the font...
+          .font('Arial', 245)
+          // Then write the text.
+          .drawText(461, 707, `${pingText}`);
         break;
       case 2:
         // 2-digit number of pings. Here we need a slightly larger pill,
         // so that needs a round rectangle.
         image = image.fill('#EF4747')
-          .stroke('#000000', 20)
-          .drawRectangle(490, 525, 710, 685, 80)
+          .stroke('#000000', 30)
+          // Only extra argument here is roundness of rectangle corners.
+          // Let's just set a high number that looks kind of like the
+          // original Discord icon.
+          .drawRectangle(365, 495, 705, 750, 80)
           .stroke('#FFFFFF', 2)
           .fill('#FFFFFF')
-          .font('Arial', 125)
-          .drawText(530, 648, `${pingText}`);
+          .font('Arial', 230)
+          .drawText(411, 703, `${pingText}`);
         break;
 
       case 3:
         // 3-digit number of pings. SLIGHTLY larger pill, we're going to
         // minimize font size more in this case.
         image = image.fill('#EF4747')
-          .stroke('#000000', 20)
-          .drawRectangle(485, 520, 715, 690, 80)
+          .stroke('#000000', 30)
+          .drawRectangle(335, 495, 755, 750, 80)
           .stroke('#FFFFFF', 2)
           .fill('#FFFFFF')
-          .font('Arial', 105)
-          .drawText(512, 641, `${pingText}`);
+          .font('Arial', 215)
+          .drawText(371, 699, `${pingText}`);
         break;
 
       case 4:
         // 4-digit number of pings. Highest we're gonna go, but we need a
         // bigger pill for this one, too.
         image = image.fill('#EF4747')
-          .stroke('#000000', 20)
-          .drawRectangle(440, 520, 730, 690, 80)
+          .stroke('#000000', 30)
+          .drawRectangle(325, 495, 765, 750, 80)
           .stroke('#FFFFFF', 2)
           .fill('#FFFFFF')
-          .font('Arial', 100)
-          .drawText(475, 641, `${pingText}`);
+          .font('Arial', 180)
+          .drawText(345, 690, `${pingText}`);
         break;
 
       default:
         // 9999+ case, basically.
         image = image.fill('#EF4747')
-          .stroke('#000000', 20)
-          .drawRectangle(420, 520, 730, 690, 80)
+          .stroke('#000000', 30)
+          .drawRectangle(325, 495, 765, 750, 80)
           .stroke('#FFFFFF', 2)
           .fill('#FFFFFF')
-          .font('Arial', 95)
-          .drawText(445, 640, `${pingText}`);
+          .font('Arial', 140)
+          .drawText(348, 670, `${pingText}`);
         break;
     }
 
