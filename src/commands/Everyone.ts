@@ -197,7 +197,7 @@ export default class Everyone extends Command {
       // now - lastCall = ...
       const { minutes } = now.diff(lastCall, ['minutes']).toObject();
       if (minutes !== undefined && minutes < 5) {
-        await super.edit(interaction, { content: "Just give it a few minutes; we don't want too many pings." });
+        await super.edit(interaction, { content: `That's kinda fast, maybe do it in <t:${lastCall.plus({ minutes: 5 }).toSeconds()}:R>` });
         return;
       }
     }
