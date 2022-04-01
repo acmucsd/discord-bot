@@ -217,7 +217,7 @@ export default class Everyone extends Command {
     if (pingCount === undefined) {
       const iconURL = guild.iconURL();
       if (iconURL === null) {
-        await super.respond(interaction, { content: "Guess this place has no custom icon. Sorry, can't ping." });
+        await super.edit(interaction, { content: "Guess this place has no custom icon. Sorry, can't ping." });
         return;
       }
 
@@ -245,8 +245,8 @@ export default class Everyone extends Command {
                 interface: 'GM',
                 uuid,
               });
-              await super.respond(interaction, `Something went wrong. Not sure. *(Error UUID: ${uuid})*`);
-              reject(new Error(`Bad error: ${err}`));
+              await super.edit(interaction, `Something went wrong. Not sure. *(Error UUID: ${uuid})*`);
+              reject(new Error(`Error writing original guild icon to disk: ${err}`));
             }
             resolve();
           });
