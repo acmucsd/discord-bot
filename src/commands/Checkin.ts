@@ -191,7 +191,8 @@ export default class Checkin extends Command {
     const qrCodes: MessageAttachment[] = [];
 
     // For each event we are given...
-    await events.forEach(async (event) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const event of events) {
       // Generate its Express Check-In URL.
       // use searchParams.set(...) to escape bad stuff in URL's, in case we have any.
       const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
@@ -235,6 +236,7 @@ export default class Checkin extends Command {
 
         // Get the Data URL of the image (base-64 encoded string of image).
         // Easier to attach than saving files.
+        // eslint-disable-next-line no-await-in-loop
         const qrCodeDataUrl = await eventQrCode.toDataURL();
 
         // Do some Discord.js shenanigans to generate an attachment from the image.
@@ -245,7 +247,7 @@ export default class Checkin extends Command {
         const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
         qrCodes.push(qrCodeAttachment);
       }
-    });
+    }
 
     // Once we finish all the events, we would have an extra newline. Cut that.
     description.pop();
@@ -255,7 +257,6 @@ export default class Checkin extends Command {
       .setTitle(isPublic ? ':calendar_spiral: Don\'t forget to check in!' : ':calendar_spiral: Today\'s Events')
       .setDescription(description.join('\n'))
       .setColor('BLUE');
-
     return {
       embeds: [embed],
       files: qrCodes,
