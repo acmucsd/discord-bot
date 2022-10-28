@@ -191,8 +191,11 @@ export default class Checkin extends Command {
     const qrCodes: MessageAttachment[] = [];
 
     // For each event we are given...
-    // eslint-disable-next-line no-restricted-syntax
-    for (const event of events) {
+    // Note: We use Promise.all since each async function call in map sends a Promise.
+    // We do this because we need to await qrCodeDataUrl's return value before pushing to qrCodes.
+    // forEach doesn't allow async callbacks and for ... of doesn't allow us to run in parallel,
+    // so this solution works most effectively + efficiently and is still linting-friendly.
+    await Promise.all(events.map(async (event) => {
       // Generate its Express Check-In URL.
       // use searchParams.set(...) to escape bad stuff in URL's, in case we have any.
       const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
@@ -236,9 +239,7 @@ export default class Checkin extends Command {
 
         // Get the Data URL of the image (base-64 encoded string of image).
         // Easier to attach than saving files.
-        // eslint-disable-next-line no-await-in-loop
         const qrCodeDataUrl = await eventQrCode.toDataURL();
-
         // Do some Discord.js shenanigans to generate an attachment from the image.
         // Apparently, the Data URL MIME type of an image needs to be removed before given to
         // Discord.js. Probably because the base64 encode is enough, but it was confusing the first
@@ -247,7 +248,7 @@ export default class Checkin extends Command {
         const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
         qrCodes.push(qrCodeAttachment);
       }
-    }
+    }));
 
     // Once we finish all the events, we would have an extra newline. Cut that.
     description.pop();
