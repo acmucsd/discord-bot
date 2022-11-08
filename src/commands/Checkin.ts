@@ -168,6 +168,46 @@ export default class Checkin extends Command {
   }
 
   /**
+   * Generate the QR Code for the given event and and return the Data URL for the code.
+   * @param event Portal Event to create the QR code for.
+   * @param expressCheckinURL URL that the QR code links to.
+   * @returns URL of the generated QR code.
+   */
+  private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL) {
+    // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
+    const eventQrCode = new QRCode({
+      // The text of the QR code we need to insert. This is just our express check-in URL.
+      text: expressCheckinURL.toString(),
+      // Make the QR code black and white.
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      // Maximum error-correction level to allow for maximum logo placement.
+      correctLevel: QRCode.CorrectLevel.H,
+      // Link to our logo. This HAS to be a white-background PNG. I also tilted it
+      // 45 degrees to make the QR code diamond-able(?)
+      logo: 'src/assets/acm-qr-logo.png',
+      logoBackgroundTransparent: false,
+      // Add white padding of 30px around the picture. Also add the name
+      // of the event to the image to differentiate between event QR codes
+      // (if multiple events in one day) and offset the title to fit in "quiet zone".
+      //
+      // Also trim title to about 35 characters so we can fit it in the QR code nicely.
+      quietZone: 40,
+      title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
+      titleTop: -20,
+      // Add a subtitle for the literal check-in code as well, so you can read it
+      // if desired without scanning the QR code.
+      subTitle: `Check-in code: ${event.attendanceCode}`,
+      subTitleTop: -5,
+    });
+
+    // Get the Data URL of the image (base-64 encoded string of image).
+    // Easier to attach than saving files.
+    const qrCodeDataUrl = await eventQrCode.toDataURL();
+    return qrCodeDataUrl;
+  }
+
+  /**
    * Generate the payload for a Checkin Code Embed with the provided list of PortalEvents,
    * adding QR code attachments if necessary.
    *
@@ -191,7 +231,11 @@ export default class Checkin extends Command {
     const qrCodes: MessageAttachment[] = [];
 
     // For each event we are given...
-    await events.forEach(async (event) => {
+    // Note: We use Promise.all since each async function call in map sends a Promise.
+    // We do this because we need to await qrCodeDataUrl's return value before pushing to qrCodes.
+    // forEach doesn't allow async callbacks and for ... of doesn't allow us to run in parallel,
+    // so this solution works most effectively + efficiently and is still linting-friendly.
+    await Promise.all(events.map(async (event) => {
       // Generate its Express Check-In URL.
       // use searchParams.set(...) to escape bad stuff in URL's, in case we have any.
       const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
@@ -206,46 +250,20 @@ export default class Checkin extends Command {
 
       // If we have to also add QR codes to the embed...
       if (needsQr) {
-        // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
-        const eventQrCode = new QRCode({
-          // The text of the QR code we need to insert. This is just our express check-in URL.
-          text: expressCheckinURL.toString(),
-          // Make the QR code black and white.
-          colorDark: '#000000',
-          colorLight: '#ffffff',
-          // Maximum error-correction level to allow for maximum logo placement.
-          correctLevel: QRCode.CorrectLevel.H,
-          // Link to our logo. This HAS to be a white-background PNG. I also tilted it
-          // 45 degrees to make the QR code diamond-able(?)
-          logo: 'src/assets/acm-qr-logo.png',
-          logoBackgroundTransparent: false,
-          // Add white padding of 30px around the picture. Also add the name
-          // of the event to the image to differentiate between event QR codes
-          // (if multiple events in one day) and offset the title to fit in "quiet zone".
-          //
-          // Also trim title to about 35 characters so we can fit it in the QR code nicely.
-          quietZone: 40,
-          title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
-          titleTop: -20,
-          // Add a subtitle for the literal check-in code as well, so you can read it
-          // if desired without scanning the QR code.
-          subTitle: `Check-in code: ${event.attendanceCode}`,
-          subTitleTop: -5,
-        });
-
-        // Get the Data URL of the image (base-64 encoded string of image).
-        // Easier to attach than saving files.
-        const qrCodeDataUrl = await eventQrCode.toDataURL();
-
-        // Do some Discord.js shenanigans to generate an attachment from the image.
-        // Apparently, the Data URL MIME type of an image needs to be removed before given to
-        // Discord.js. Probably because the base64 encode is enough, but it was confusing the first
-        // time around.
-        const qrCodeBuffer: Buffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
-        const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
-        qrCodes.push(qrCodeAttachment);
+        try {
+          const qrCodeDataUrl = await this.generateQRCodeURL(event, expressCheckinURL);
+          // Do some Discord.js shenanigans to generate an attachment from the image.
+          // Apparently, the Data URL MIME type of an image needs to be removed before given to
+          // Discord.js. Probably because the base64 encode is enough,
+          // but it was confusing the first time around.
+          const qrCodeBuffer: Buffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
+          const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
+          qrCodes.push(qrCodeAttachment);
+        } catch (error) {
+          Logger.error(error);
+        }
       }
-    });
+    }));
 
     // Once we finish all the events, we would have an extra newline. Cut that.
     description.pop();
@@ -255,7 +273,6 @@ export default class Checkin extends Command {
       .setTitle(isPublic ? ':calendar_spiral: Don\'t forget to check in!' : ':calendar_spiral: Today\'s Events')
       .setDescription(description.join('\n'))
       .setColor('BLUE');
-
     return {
       embeds: [embed],
       files: qrCodes,
