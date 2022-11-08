@@ -152,7 +152,7 @@ export default class Checkin extends Command {
    * @private
    */
   private async getFutureEvents(): Promise<PortalEvent[]> {
-    const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/event/future', {
+    const portalAPIResponse = await got('https://testing.api.acmucsd.com/api/v2/event/future', {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,
@@ -178,32 +178,36 @@ export default class Checkin extends Command {
     const eventQrCode = new QRCode({
       // The text of the QR code we need to insert. This is just our express check-in URL.
       text: expressCheckinURL.toString(),
-      // Make the QR code black and white.
+      // Make the QR code black and transparent.
+      // The background image provides the white background for the QR code.
       colorDark: '#000000',
-      colorLight: '#ffffff',
+      colorLight: 'rgba(0,0,0,0)',
       // Maximum error-correction level to allow for maximum logo placement.
       correctLevel: QRCode.CorrectLevel.H,
       // Link to our logo. This HAS to be a white-background PNG. I also tilted it
       // 45 degrees to make the QR code diamond-able(?)
       logo: 'src/assets/acm-qr-logo.png',
       logoBackgroundTransparent: false,
+      backgroundImage: 'src/assets/background.png',
       // Add white padding of 30px around the picture. Also add the name
       // of the event to the image to differentiate between event QR codes
       // (if multiple events in one day) and offset the title to fit in "quiet zone".
       //
       // Also trim title to about 35 characters so we can fit it in the QR code nicely.
       quietZone: 40,
-      title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
-      titleTop: -20,
+      //title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
+      //titleTop: -20,
+      //titleBackgroundColor: 'transparent',
       // Add a subtitle for the literal check-in code as well, so you can read it
       // if desired without scanning the QR code.
-      subTitle: `Check-in code: ${event.attendanceCode}`,
-      subTitleTop: -5,
+      //subTitle: `Check-in code: ${event.attendanceCode}`,
+      //subTitleTop: -5,
     });
 
     // Get the Data URL of the image (base-64 encoded string of image).
     // Easier to attach than saving files.
     const qrCodeDataUrl = await eventQrCode.toDataURL();
+    Logger.info(qrCodeDataUrl);
     return qrCodeDataUrl;
   }
 
