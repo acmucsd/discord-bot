@@ -116,6 +116,14 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.acmurl.password = process.env.ACMURL_PASSWORD;
     this.settings.portalAPI.username = process.env.MEMBERSHIP_PORTAL_API_USERNAME;
     this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
+    if (!process.env.DISCORD_GUILD_IDS) {
+      Logger.error('Could not construct Client class: missing Discord Guild ID List in envvars', {
+        eventType: 'initError',
+        error: 'missing Discord Guild ID List in envvars',
+      });
+      throw new Error('Could not construct Client class: missing Discord Guild ID List in envvars');
+    }
+    this.settings.discordGuildIDs = JSON.parse(process.env.DISCORD_GUILD_IDS);
     this.initialize().then();
   }
 

@@ -36,4 +36,5 @@ export default {
     commands: 'src/commands',
     events: 'src/events',
   },
+  discordGuildIDs: [],
 } as BotSettings;

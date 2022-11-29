@@ -80,6 +80,14 @@ export default class {
             Routes.applicationCommands(client.settings.clientID),
             { body: slashCommands },
           );
+          await Promise.all(client.settings.discordGuildIDs.map((id) => {
+            Logger.info(`Loading Slash Commands for Guild ${id}`);
+            Logger.info(typeof id);
+            return restAPI.put(
+              Routes.applicationGuildCommands(client.settings.clientID, id.toString()),
+              { body: slashCommands },
+            );
+          }));
           Logger.info('Loaded Slash Commands on Discord Gateway!', {
             eventType: 'slashCommandLoaded',
           });
