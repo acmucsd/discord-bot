@@ -34,7 +34,7 @@
     "got": "^11.8.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
-    "luxon": "^1.26.0",
+    "luxon": "^1.28.1",
     "node-schedule": "^2.0.0",
     "reflect-metadata": "^0.1.13",
     "typedi": "^0.10.0",
