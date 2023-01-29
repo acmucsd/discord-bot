@@ -29,6 +29,32 @@ export default class QR extends Command {
   }
 
   /**
+   * Generates and returns a QR code given the data, title, and subtitle.
+   * 
+   * @param interaction The Slash Command Interaction instance.
+   * @param interaction The Slash Command Interaction instance.
+   * @param interaction The Slash Command Interaction instance.
+   * @returns
+   */
+  public generateQR(data: string, title: string, subtitle: string): QRCode {
+    return new QRCode ({
+      text: data,
+      colorDark: '#000000',
+      colorLight: 'rgb(0,0,0,0)',
+      correctLevel: QRCode.CorrectLevel.H,
+      logo: 'src/assets/acm-qr-logo.png',
+      logoBackgroundTransparent: false,
+      backgroundImage: 'src/assets/background.png',
+      quietZone: 40,
+      title: title,
+      titleTop: -20,
+      titleBackgroundColor: 'transparent',
+      subTitle: `Check-in code: ${subtitle}`,
+      subTitleTop: -5,
+    });
+  }
+
+  /**
    * The workhorse of QR, this just makes a QR code and sends it to the channel.
    * We don't validate the data of the QR code, though we could.
    *

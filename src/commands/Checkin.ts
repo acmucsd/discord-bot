@@ -152,7 +152,7 @@ export default class Checkin extends Command {
    * @private
    */
   private async getFutureEvents(): Promise<PortalEvent[]> {
-    const portalAPIResponse = await got('https://testing.api.acmucsd.com/api/v2/event/future', {
+    const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/event/future', {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,
