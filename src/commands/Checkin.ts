@@ -1,5 +1,7 @@
 import {
-  CommandInteraction, MessageAttachment, MessageEmbed,
+  CommandInteraction,
+  MessageAttachment,
+  MessageEmbed,
 } from 'discord.js';
 import got from 'got';
 import { DateTime, Interval } from 'luxon';
@@ -21,19 +23,36 @@ export default class Checkin extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('checkin')
-      .addBooleanOption((option) => option.setName('now').setDescription('If true, send public embed of checking code for live events!').setRequired(false))
-      .addBooleanOption((option) => option.setName('qr').setDescription('If possible, include a QR code for Express Check-In in embed.').setRequired(false))
-      .setDescription('Sends a DM or embed with all check-in codes from today\'s events. Includes Express Checkin QR code!');
+      .addBooleanOption((option) => option
+        .setName('now')
+        .setDescription(
+          'If true, send public embed of checking code for live events!',
+        )
+        .setRequired(false))
+      .addBooleanOption((option) => option
+        .setName('qr')
+        .setDescription(
+          'If possible, include a QR code for Express Check-In in embed.',
+        )
+        .setRequired(false))
+      .setDescription(
+        "Sends a DM or embed with all check-in codes from today's events. Includes Express Checkin QR code!",
+      );
 
-    super(client, {
-      name: 'checkin',
-      boardRequired: true,
-      enabled: true,
-      description: 'Sends a private message with all check-in codes from today\'s events. Calling with `now` argument sends public embed of checkin code if any events are now live!',
-      category: 'Utility',
-      usage: client.settings.prefix.concat('checkin [now]'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'checkin',
+        boardRequired: true,
+        enabled: true,
+        description:
+          "Sends a private message with all check-in codes from today's events. Calling with `now` argument sends public embed of checkin code if any events are now live!",
+        category: 'Utility',
+        usage: client.settings.prefix.concat('checkin [now]'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition,
+    );
   }
 
   /**
@@ -79,22 +98,30 @@ export default class Checkin extends Command {
       const todayEvents = futureEvents.filter((event) => {
         // get today's midnight
         const midnightToday = DateTime.now().set({
-          hour: 0, minute: 0, second: 0, millisecond: 0,
+          hour: 0,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
         });
 
         // get tomorrow's midnight
-        const midnightTomorrow = DateTime.now().set({
-          hour: 0, minute: 0, second: 0, millisecond: 0,
-        }).plus({ day: 1 });
+        const midnightTomorrow = DateTime.now()
+          .set({
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          })
+          .plus({ day: 1 });
 
         // check if start time in between
-        return Interval.fromDateTimes(midnightToday, midnightTomorrow).contains(event.start);
+        return Interval.fromDateTimes(midnightToday, midnightTomorrow).contains(
+          event.start,
+        );
       });
 
       // Check if current time in between event
-      const liveEvents = futureEvents.filter(
-        (event) => Interval.fromDateTimes(event.start, event.end).contains(DateTime.now()),
-      );
+      const liveEvents = futureEvents.filter((event) => Interval.fromDateTimes(event.start, event.end).contains(DateTime.now()));
 
       // We'll make sure to check if the required set of events by
       // command arugments is empty; if it is, just return "No events today!"
@@ -113,12 +140,18 @@ export default class Checkin extends Command {
       // Now we finally check the command argument.
       // If we just had `checkin` in our call, no arguments...
       if (!isPublic) {
-        const author = await this.client.users.fetch(interaction.member!.user.id);
+        const author = await this.client.users.fetch(
+          interaction.member!.user.id,
+        );
         // What we need now is to construct the Payload to send for `checkin` with no arguments,
         // as well as the Payload for when we have `checkin now`.
         //
         // Since this is private, we can list all of today's events.
-        const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsQr);
+        const privateMessage = await Checkin.getCheckinMessage(
+          todayEvents,
+          isPublic,
+          needsQr,
+        );
         await author.send(privateMessage);
         await super.edit(interaction, {
           content: 'Check your DM.',
@@ -127,7 +160,11 @@ export default class Checkin extends Command {
       } else {
         // This is public, so we only want to give events that are live RIGHT now (so no one can
         // pre-emptively get checkin codes if they're left to be seen).
-        const publicMessage = await Checkin.getCheckinMessage(liveEvents, isPublic, needsQr);
+        const publicMessage = await Checkin.getCheckinMessage(
+          liveEvents,
+          isPublic,
+          needsQr,
+        );
         await super.edit(interaction, publicMessage);
       }
     } catch (e) {
@@ -141,7 +178,10 @@ export default class Checkin extends Command {
         error,
         uuid: errorUUID,
       });
-      await super.edit(interaction, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
+      await super.edit(
+        interaction,
+        `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`,
+      );
     }
   }
 
@@ -152,19 +192,21 @@ export default class Checkin extends Command {
    * @private
    */
   private async getFutureEvents(): Promise<PortalEvent[]> {
-    const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/event/future', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.client.apiToken}`,
-      },
-    }).json() as any;
-
-    return portalAPIResponse.events.map((event: any) => (
+    const portalAPIResponse = (await got(
+      `${this.client.settings.portalAPI.url}/api/v2/event/future`,
       {
-        ...event,
-        start: DateTime.fromISO(event.start),
-        end: DateTime.fromISO(event.end),
-      }));
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.client.apiToken}`,
+        },
+      },
+    ).json()) as any;
+
+    return portalAPIResponse.events.map((event: any) => ({
+      ...event,
+      start: DateTime.fromISO(event.start),
+      end: DateTime.fromISO(event.end),
+    }));
   }
 
   /**
@@ -173,7 +215,10 @@ export default class Checkin extends Command {
    * @param expressCheckinURL URL that the QR code links to.
    * @returns URL of the generated QR code.
    */
-  private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL) {
+  private static async generateQRCodeURL(
+    event: PortalEvent,
+    expressCheckinURL: URL,
+  ) {
     // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
     const eventQrCode = new QRCode({
       // The text of the QR code we need to insert. This is just our express check-in URL.
@@ -193,7 +238,10 @@ export default class Checkin extends Command {
       //
       // Also trim title to about 35 characters so we can fit it in the QR code nicely.
       quietZone: 40,
-      title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
+      title:
+        event.title.substring(0, 36) === event.title
+          ? event.title
+          : event.title.substring(0, 36).concat('...'),
       titleTop: -20,
       // Add a subtitle for the literal check-in code as well, so you can read it
       // if desired without scanning the QR code.
@@ -223,7 +271,11 @@ export default class Checkin extends Command {
   // No method headers should be split between two lines due to length.
   // TODO Fix this rule in ESLint, if possible.
   // eslint-disable-next-line max-len
-  private static async getCheckinMessage(events: PortalEvent[], isPublic: boolean, needsQr: boolean): Promise<InteractionPayload> {
+  private static async getCheckinMessage(
+    events: PortalEvent[],
+    isPublic: boolean,
+    needsQr: boolean,
+  ): Promise<InteractionPayload> {
     // This method became very complicated very quickly, so we'll break this down.
     // Create arrays to store our payload contents temporarily. We'll put this in our embed
     // once we build the entire message from each event we have to build the payload for.
@@ -235,42 +287,59 @@ export default class Checkin extends Command {
     // We do this because we need to await qrCodeDataUrl's return value before pushing to qrCodes.
     // forEach doesn't allow async callbacks and for ... of doesn't allow us to run in parallel,
     // so this solution works most effectively + efficiently and is still linting-friendly.
-    await Promise.all(events.map(async (event) => {
-      // Generate its Express Check-In URL.
-      // use searchParams.set(...) to escape bad stuff in URL's, in case we have any.
-      const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
-      expressCheckinURL.searchParams.set('code', event.attendanceCode);
+    await Promise.all(
+      events.map(async (event) => {
+        // Generate its Express Check-In URL.
+        // use searchParams.set(...) to escape bad stuff in URL's, in case we have any.
+        const expressCheckinURL = new URL(
+          'https://members.acmucsd.com/checkin',
+        );
+        expressCheckinURL.searchParams.set('code', event.attendanceCode);
 
-      // Add the Event's title and make it a hyperlink to the express check-in URL.
-      description.push(`*[${event.title}](${expressCheckinURL})*`);
-      // Add the check-in code for those who want to copy-paste it.
-      description.push(`**Checkin Code: \`${event.attendanceCode}\`**`);
-      // Add a newline to delimit the next event.
-      description.push('\n');
+        // Add the Event's title and make it a hyperlink to the express check-in URL.
+        description.push(`*[${event.title}](${expressCheckinURL})*`);
+        // Add the check-in code for those who want to copy-paste it.
+        description.push(`**Checkin Code: \`${event.attendanceCode}\`**`);
+        // Add a newline to delimit the next event.
+        description.push('\n');
 
-      // If we have to also add QR codes to the embed...
-      if (needsQr) {
-        try {
-          const qrCodeDataUrl = await this.generateQRCodeURL(event, expressCheckinURL);
-          // Do some Discord.js shenanigans to generate an attachment from the image.
-          // Apparently, the Data URL MIME type of an image needs to be removed before given to
-          // Discord.js. Probably because the base64 encode is enough,
-          // but it was confusing the first time around.
-          const qrCodeBuffer: Buffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
-          const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
-          qrCodes.push(qrCodeAttachment);
-        } catch (error) {
-          Logger.error(error);
+        // If we have to also add QR codes to the embed...
+        if (needsQr) {
+          try {
+            const qrCodeDataUrl = await this.generateQRCodeURL(
+              event,
+              expressCheckinURL,
+            );
+            // Do some Discord.js shenanigans to generate an attachment from the image.
+            // Apparently, the Data URL MIME type of an image needs to be removed before given to
+            // Discord.js. Probably because the base64 encode is enough,
+            // but it was confusing the first time around.
+            const qrCodeBuffer: Buffer = Buffer.from(
+              qrCodeDataUrl.split(',')[1],
+              'base64',
+            );
+            const qrCodeAttachment = new MessageAttachment(
+              qrCodeBuffer,
+              `checkin-${event.attendanceCode}.png`,
+            );
+            qrCodes.push(qrCodeAttachment);
+          } catch (error) {
+            Logger.error(error);
+          }
         }
-      }
-    }));
+      }),
+    );
 
     // Once we finish all the events, we would have an extra newline. Cut that.
     description.pop();
 
     // Make the embed, and also set the right title, depending what kind of embed we're making.
     const embed = new MessageEmbed()
-      .setTitle(isPublic ? ':calendar_spiral: Don\'t forget to check in!' : ':calendar_spiral: Today\'s Events')
+      .setTitle(
+        isPublic
+          ? ":calendar_spiral: Don't forget to check in!"
+          : ":calendar_spiral: Today's Events",
+      )
       .setDescription(description.join('\n'))
       .setColor('BLUE');
     return {
