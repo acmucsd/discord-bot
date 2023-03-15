@@ -31,25 +31,25 @@ export default class QR extends Command {
   /**
    * Generates and returns a QR code given the data, title, and subtitle.
    * 
-   * @param interaction The Slash Command Interaction instance.
-   * @param interaction The Slash Command Interaction instance.
-   * @param interaction The Slash Command Interaction instance.
-   * @returns
+   * @param data The content to put in the QR code.
+   * @param title event name
+   * @param subtitle event description
+   * @returns newly generated QR code
    */
-  public generateQR(data: string, title: string, subtitle: string): QRCode {
+  public static generateQR(data: string, title: string, subtitle: string): QRCode {
     return new QRCode ({
       text: data,
       colorDark: '#000000',
-      colorLight: 'rgb(0,0,0,0)',
+      colorLight: 'rgba(0,0,0,0)',
       correctLevel: QRCode.CorrectLevel.H,
       logo: 'src/assets/acm-qr-logo.png',
       logoBackgroundTransparent: false,
       backgroundImage: 'src/assets/background.png',
       quietZone: 40,
-      title: title,
+      title: title.substring(0, 36) === title ? title : title.substring(0, 36).concat('...'),
       titleTop: -20,
       titleBackgroundColor: 'transparent',
-      subTitle: `Check-in code: ${subtitle}`,
+      subTitle: subtitle,
       subTitleTop: -5,
     });
   }
@@ -73,24 +73,7 @@ export default class QR extends Command {
     //
     // See Checkin.ts on how QR code arguments work.
     //
-    const qrCode = new QRCode({
-      text: content,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H,
-      logo: 'src/assets/acm-qr-logo.png',
-      logoBackgroundTransparent: false,
-      quietZone: 30,
-      // Conditionally add the title to the QR code.
-      // If the title is custom, include it
-      ...(customTitle ? {
-        title: titleArgument.substring(0, 36) === titleArgument ? titleArgument : titleArgument.substring(0, 36).concat('...'),
-        titleTop: -10,
-      } : {
-        title: content.substring(0, 36) === content ? content : content.substring(0, 36).concat('...'),
-        titleTop: -10,
-      }),
-    });
+    const qrCode = QR.generateQR(content, titleArgument || content, "");
 
     // Make the Discord attachment for the QR code.
     const qrCodeDataUrl = await qrCode.toDataURL();

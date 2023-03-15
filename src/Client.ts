@@ -128,7 +128,9 @@ export default class Client extends DiscordClient implements BotClient {
    */
   private async initialize(): Promise<void> {
     try {
+      console.log("HELLEO LADFKJ")
       this.portalAPIManager.initializeTokenHandling(this);
+      console.log("AFTER THIS")
       this.actionManager.initializeCommands(this);
       ActionManager.initializeEvents(this);
       await this.login(configuration.token);

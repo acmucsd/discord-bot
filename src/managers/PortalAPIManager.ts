@@ -30,6 +30,7 @@ export default class {
      */
     public initializeTokenHandling(client: BotClient): void {
       this.loginPortal(client).then();
+
       this.apiTokenRefreshJob = schedule.scheduleJob(('0 * * * *'), () => {
         Logger.info('Checking Membership Portal API token validity.');
         if (!this.tokenValid()) {
@@ -47,7 +48,7 @@ export default class {
      * @private
      */
     public async loginPortal(client: BotClient): Promise<void> {
-      const portalAPIResponse = await got.post('https://api.acmucsd.com/api/v2/auth/login', {
+      const portalAPIResponse = await got.post('https://testing.api.acmucsd.com/api/v2/auth/login', {
         headers: {
           'Content-Type': 'application/json',
         },

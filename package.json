@@ -25,6 +25,7 @@
     "@discordjs/builders": "^0.6.0",
     "@discordjs/rest": "^0.1.1-canary.0",
     "@psibean/discord.js-pagination": "^4.0.0",
+    "canvas": "^2.11.0",
     "cron": "^1.8.2",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",

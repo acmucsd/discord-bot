@@ -11,6 +11,9 @@ import {
 } from '../types';
 import Command from '../Command';
 import Logger from '../utils/Logger';
+import QR from './QR';
+import { createCanvas, loadImage, Image } from 'canvas';
+import fs from 'fs';
 
 /**
  * This Command DM's the caller the checkin code and Express Checkin link for any events
@@ -152,7 +155,7 @@ export default class Checkin extends Command {
    * @private
    */
   private async getFutureEvents(): Promise<PortalEvent[]> {
-    const portalAPIResponse = await got('https://api.acmucsd.com/api/v2/event/future', {
+    const portalAPIResponse = await got('https://testing.api.acmucsd.com/api/v2/event/future', {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,
@@ -175,39 +178,101 @@ export default class Checkin extends Command {
    */
   private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL) {
     // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
-    const eventQrCode = new QRCode({
-      // The text of the QR code we need to insert. This is just our express check-in URL.
-      text: expressCheckinURL.toString(),
-      // Make the QR code black and transparent.
-      // The background image provides the white background for the QR code.
-      colorDark: '#000000',
-      colorLight: 'rgba(0,0,0,0)',
-      // Maximum error-correction level to allow for maximum logo placement.
-      correctLevel: QRCode.CorrectLevel.H,
-      // Link to our logo. This HAS to be a white-background PNG. I also tilted it
-      // 45 degrees to make the QR code diamond-able(?)
-      logo: 'src/assets/acm-qr-logo.png',
-      logoBackgroundTransparent: false,
-      backgroundImage: 'src/assets/background.png',
-      // Add white padding of 30px around the picture. Also add the name
-      // of the event to the image to differentiate between event QR codes
-      // (if multiple events in one day) and offset the title to fit in "quiet zone".
-      //
-      // Also trim title to about 35 characters so we can fit it in the QR code nicely.
-      quietZone: 40,
-      //title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
-      //titleTop: -20,
-      //titleBackgroundColor: 'transparent',
-      // Add a subtitle for the literal check-in code as well, so you can read it
-      // if desired without scanning the QR code.
-      //subTitle: `Check-in code: ${event.attendanceCode}`,
-      //subTitleTop: -5,
-    });
+    const eventQrCode = QR.generateQR(expressCheckinURL.toString(), "", "")
+    
+    // Creating slide with Canvas
+    // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
+    const slide = createCanvas(1920, 1080);
+    const context = slide.getContext('2d');
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, 1920, 1080);
+    
+    // draw background
+    const background = await loadImage('./src/assets/acm-background.png')
+    context.drawImage(background, 0, 0, 1920, 1080);
 
+    // draw qr code
+    const angleInRadians = Math.PI / 4;
+    context.rotate(angleInRadians);
+    const qrImg = await loadImage(await eventQrCode.toDataURL())
+    context.drawImage(qrImg, 400, -300, 550, 550);
+    context.rotate(-1 * angleInRadians);
+
+    // write ACM at UCSD
+    context.font = "bold 80pt 'DM Sans'";
+    context.textAlign = "right";
+    context.fillStyle = "#000";
+    context.fillText("ACM", 400, 975);
+    context.font = "80pt 'DM Sans'";
+    context.textAlign = "left";
+    context.fillText(" at UCSD", 400, 975);
+
+    // Check-in Code
+    context.font = "70pt 'DM Sans'";
+    context.textAlign = "center";
+    context.fillText("Check-in Code", 1400, 320);
+
+    // for
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(1000, 400);
+    context.lineTo(1300, 400);
+    context.stroke();
+    context.font = "50pt 'DM Sans'";
+    context.fillText("for", 1400, 415);
+    context.beginPath();
+    context.moveTo(1500, 400);
+    context.lineTo(1800, 400);
+    context.stroke();
+
+    // event name
+    context.font = "bold 60pt 'DM Sans'";
+    // if(event.title.length )
+    // context.fillText(event.title, 1400, 520);
+    context.fillText("wwwwwwwwwwwwwwww", 1400, 520);
+
+    // code
+    // const checkinCode = event.attendanceCode;
+    const checkinCode = "llllllllllllllllllllllllllllllllllllllllllllllllll";
+    console.log(JSON.stringify(event));
+    // const checkinCode = "test";
+
+    const textMetrics = context.measureText(checkinCode);
+    const codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
+    context.fillStyle = "#70BAFF";
+    context.beginPath();
+    // roundRect parameters: x, y, width, height, radius
+    context.roundRect(1400 - (codeWidth) / 2, 600, codeWidth, 120, 20);
+    context.fill();
+    context.font = "bold 50pt 'DM Sans'";
+    context.fillStyle = "#fff";
+    context.fillText(checkinCode, 1400, 680);
+
+    // const codeWidth = (checkinCode.length + 1) * 35 + 20;
+    // context.fillStyle = "#70BAFF";
+    // context.beginPath();
+    // context.roundRect(1400 - (codeWidth) / 2, 600, codeWidth, 120, 20);
+    // context.fill();
+    // context.font = "bold 50pt 'DM Sans'";
+    // context.fillStyle = "#fff";
+    
+    // context.shadowColor = "#70BAFF";
+    // context.shadowBlur = 10;
+    // context.lineWidth = 10;
+    // context.strokeStyle = "white";
+    // context.strokeText(checkinCode, 1400, 680);
+    // context.shadowBlur = 0;
+    // context.fillStyle = "#70BAFF";
+    // context.fillText(checkinCode, 1400, 680);
+
+    // members.acmucsd.com
+    context.font = "40pt 'DM Sans'";
+    context.fillStyle = "#727272EB";
+    context.fillText("members.acmucsd.com", 1550, 1000);
+    
     // Get the Data URL of the image (base-64 encoded string of image).
     // Easier to attach than saving files.
-    const qrCodeDataUrl = await eventQrCode.toDataURL();
-    Logger.info(qrCodeDataUrl);
+    const qrCodeDataUrl = await slide.toDataURL();
     return qrCodeDataUrl;
   }
 
