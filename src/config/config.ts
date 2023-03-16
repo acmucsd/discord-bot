@@ -1,41 +1,41 @@
-import { BotSettings } from "../types";
+import { BotSettings } from '../types';
 
 export default {
   apiKeys: {},
   acmurl: {
-    username: "",
-    password: "",
+    username: '',
+    password: '',
   },
-  clientID: "",
+  clientID: '',
   clientOptions: {
     intents: [
-      "GUILDS",
-      "GUILD_INTEGRATIONS",
-      "GUILD_WEBHOOKS",
-      "GUILD_MESSAGES",
-      "DIRECT_MESSAGES",
-      "GUILD_MESSAGE_REACTIONS",
-      "DIRECT_MESSAGE_REACTIONS",
+      'GUILDS',
+      'GUILD_INTEGRATIONS',
+      'GUILD_WEBHOOKS',
+      'GUILD_MESSAGES',
+      'DIRECT_MESSAGES',
+      'GUILD_MESSAGE_REACTIONS',
+      'DIRECT_MESSAGE_REACTIONS',
     ],
   },
   portalAPI: {
-    username: "",
-    password: "",
+    username: '',
+    password: '',
   },
   presence: {
     activities: [
       {
-        type: "WATCHING",
-        name: "acmurl.com/poggers",
+        type: 'WATCHING',
+        name: 'acmurl.com/poggers',
       },
     ],
-    status: "online",
+    status: 'online',
   },
-  token: "",
-  prefix: "!",
+  token: '',
+  prefix: '!',
   paths: {
-    commands: "src/commands",
-    events: "src/events",
+    commands: 'src/commands',
+    events: 'src/events',
   },
   discordGuildIDs: [],
 } as BotSettings;

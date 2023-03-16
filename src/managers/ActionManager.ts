@@ -1,12 +1,12 @@
-import { Collection } from "discord.js";
-import { REST } from "@discordjs/rest";
-import { Service } from "typedi";
-import { join } from "path";
-import { readdir, statSync } from "fs";
-import { Routes } from "discord-api-types/v9";
-import { BotClient } from "../types";
-import Command from "../Command";
-import Logger from "../utils/Logger";
+import { Collection } from 'discord.js';
+import { REST } from '@discordjs/rest';
+import { Service } from 'typedi';
+import { join } from 'path';
+import { readdir, statSync } from 'fs';
+import { Routes } from 'discord-api-types/v9';
+import { BotClient } from '../types';
+import Command from '../Command';
+import Logger from '../utils/Logger';
 
 /**
  * ActionManager dynamically managed all of the respective Commands and Events
@@ -53,7 +53,7 @@ export default class {
         } else {
           // Import our Command file.
           const commandImport = await import(
-            join(__dirname, "../../", `${commands}/${cmd.replace("ts", "js")}`)
+            join(__dirname, '../../', `${commands}/${cmd.replace('ts', 'js')}`)
           );
 
           // Get the default export.
@@ -71,17 +71,17 @@ export default class {
       });
 
       // Now we upload the Slash Command registration payload to Discord.
-      const restAPI = new REST({ version: "9" }).setToken(
-        client.settings.token
+      const restAPI = new REST({ version: '9' }).setToken(
+        client.settings.token,
       );
 
       (async () => {
-        Logger.info("Loading Slash Commands on Discord Gateway...", {
-          eventType: "slashCommandLoading",
+        Logger.info('Loading Slash Commands on Discord Gateway...', {
+          eventType: 'slashCommandLoading',
         });
         await restAPI.put(
           Routes.applicationCommands(client.settings.clientID),
-          { body: slashCommands }
+          { body: slashCommands },
         );
         await Promise.all(
           client.settings.discordGuildIDs.map((id) => {
@@ -90,14 +90,14 @@ export default class {
             return restAPI.put(
               Routes.applicationGuildCommands(
                 client.settings.clientID,
-                id.toString()
+                id.toString(),
               ),
-              { body: slashCommands }
+              { body: slashCommands },
             );
-          })
+          }),
         );
-        Logger.info("Loaded Slash Commands on Discord Gateway!", {
-          eventType: "slashCommandLoaded",
+        Logger.info('Loaded Slash Commands on Discord Gateway!', {
+          eventType: 'slashCommandLoaded',
         });
       })();
     });
@@ -119,7 +119,7 @@ export default class {
       files.forEach(async (evt) => {
         // Import our Event file.
         const eventImport = await import(
-          join(__dirname, "../../", `${events}/${evt.replace("ts", "js")}`)
+          join(__dirname, '../../', `${events}/${evt.replace('ts', 'js')}`)
         );
 
         // Get the default export.
@@ -128,7 +128,7 @@ export default class {
         const event = new LoadedEvent(client);
 
         // Get the name of the event from Discord.js.
-        const eventName = evt.split(".")[0];
+        const eventName = evt.split('.')[0];
 
         // Initialize the event in Discord.js.
         // We lowercase the first letter, since that's how events are written down in Discord.js,
@@ -136,7 +136,7 @@ export default class {
         // event.
         client.on(
           eventName.charAt(0).toLowerCase() + eventName.slice(1),
-          (...args: string[]) => event.run(...args)
+          (...args: string[]) => event.run(...args),
         );
       });
     });

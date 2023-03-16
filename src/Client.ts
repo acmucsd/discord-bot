@@ -1,11 +1,11 @@
-import { Collection, Client as DiscordClient } from "discord.js";
-import { Service } from "typedi";
-import Logger from "./utils/Logger";
-import { BotSettings, BotClient, BotInitializationError } from "./types";
-import Command from "./Command";
-import ActionManager from "./managers/ActionManager";
-import configuration from "./config/config";
-import PortalAPIManager from "./managers/PortalAPIManager";
+import { Collection, Client as DiscordClient } from 'discord.js';
+import { Service } from 'typedi';
+import Logger from './utils/Logger';
+import { BotSettings, BotClient, BotInitializationError } from './types';
+import Command from './Command';
+import ActionManager from './managers/ActionManager';
+import configuration from './config/config';
+import PortalAPIManager from './managers/PortalAPIManager';
 
 /**
  * The class representing the Discord bot.
@@ -43,47 +43,47 @@ export default class Client extends DiscordClient implements BotClient {
    */
   constructor(
     private actionManager: ActionManager,
-    private portalAPIManager: PortalAPIManager
+    private portalAPIManager: PortalAPIManager,
   ) {
     super(
       configuration.clientOptions || {
         intents: [
-          "GUILDS",
-          "GUILD_INTEGRATIONS",
-          "GUILD_WEBHOOKS",
-          "GUILD_MESSAGES",
-          "DIRECT_MESSAGES",
-          "GUILD_MESSAGE_REACTIONS",
-          "DIRECT_MESSAGE_REACTIONS",
+          'GUILDS',
+          'GUILD_INTEGRATIONS',
+          'GUILD_WEBHOOKS',
+          'GUILD_MESSAGES',
+          'DIRECT_MESSAGES',
+          'GUILD_MESSAGE_REACTIONS',
+          'DIRECT_MESSAGE_REACTIONS',
         ],
-      }
+      },
     );
     this.settings = configuration;
     // We absolutely need some envvars, so if they're not in our .env file, nuke the initialization.
     // We can throw Errors here to nuke the bot, since we don't have any catches higher up.
     if (!process.env.BOT_TOKEN) {
-      throw new BotInitializationError("Bot Token");
+      throw new BotInitializationError('Bot Token');
     }
     if (!process.env.BOT_PREFIX) {
-      throw new BotInitializationError("Bot Prefix");
+      throw new BotInitializationError('Bot Prefix');
     }
     if (!process.env.CLIENT_ID) {
-      throw new BotInitializationError("App Client ID");
+      throw new BotInitializationError('App Client ID');
     }
     if (!process.env.ACMURL_USERNAME) {
-      throw new BotInitializationError("ACMURL Username");
+      throw new BotInitializationError('ACMURL Username');
     }
     if (!process.env.ACMURL_PASSWORD) {
-      throw new BotInitializationError("ACMURL Password");
+      throw new BotInitializationError('ACMURL Password');
     }
     if (!process.env.MEMBERSHIP_PORTAL_API_USERNAME) {
-      throw new BotInitializationError("Membership Portal API Username");
+      throw new BotInitializationError('Membership Portal API Username');
     }
     if (!process.env.MEMBERSHIP_PORTAL_API_PASSWORD) {
-      throw new BotInitializationError("Membership Portal API Password");
+      throw new BotInitializationError('Membership Portal API Password');
     }
     if (!process.env.DISCORD_GUILD_IDS) {
-      throw new BotInitializationError("Discord Guild ID List");
+      throw new BotInitializationError('Discord Guild ID List');
     }
     this.settings.clientID = process.env.CLIENT_ID;
     this.settings.token = process.env.BOT_TOKEN;
@@ -93,12 +93,10 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
     this.settings.acmurl.username = process.env.ACMURL_USERNAME;
     this.settings.acmurl.password = process.env.ACMURL_PASSWORD;
-    this.settings.portalAPI.username =
-      process.env.MEMBERSHIP_PORTAL_API_USERNAME;
-    this.settings.portalAPI.password =
-      process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
+    this.settings.portalAPI.username = process.env.MEMBERSHIP_PORTAL_API_USERNAME;
+    this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
     this.settings.discordGuildIDs = JSON.parse(
-      process.env.DISCORD_GUILD_IDS
+      process.env.DISCORD_GUILD_IDS,
     ) as Array<string>;
     this.initialize().then();
   }
