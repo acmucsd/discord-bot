@@ -129,6 +129,11 @@ export interface BotSettings {
     commands: string;
     events: string;
   };
+
+  /**
+   * List of Discord Guild (server) IDs to speed up porting of slash commands.
+   */
+  discordGuildIDs: Array<string>;
 }
 
 /**

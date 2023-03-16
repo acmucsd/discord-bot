@@ -70,13 +70,6 @@ export default class Client extends DiscordClient implements BotClient {
     if (!process.env.CLIENT_ID) {
       throw new BotInitializationError("App Client ID");
     }
-    this.settings.clientID = process.env.CLIENT_ID;
-    this.settings.token = process.env.BOT_TOKEN;
-    this.settings.prefix = process.env.BOT_PREFIX;
-    this.settings.maintainerID = process.env.MAINTAINER_USER_ID;
-    this.settings.apiKeys.catAPI = process.env.CAT_API_KEY;
-    this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
-
     if (!process.env.ACMURL_USERNAME) {
       throw new BotInitializationError("ACMURL Username");
     }
@@ -89,12 +82,24 @@ export default class Client extends DiscordClient implements BotClient {
     if (!process.env.MEMBERSHIP_PORTAL_API_PASSWORD) {
       throw new BotInitializationError("Membership Portal API Password");
     }
+    if (!process.env.DISCORD_GUILD_IDS) {
+      throw new BotInitializationError("Discord Guild ID List");
+    }
+    this.settings.clientID = process.env.CLIENT_ID;
+    this.settings.token = process.env.BOT_TOKEN;
+    this.settings.prefix = process.env.BOT_PREFIX;
+    this.settings.maintainerID = process.env.MAINTAINER_USER_ID;
+    this.settings.apiKeys.catAPI = process.env.CAT_API_KEY;
+    this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
     this.settings.acmurl.username = process.env.ACMURL_USERNAME;
     this.settings.acmurl.password = process.env.ACMURL_PASSWORD;
     this.settings.portalAPI.username =
       process.env.MEMBERSHIP_PORTAL_API_USERNAME;
     this.settings.portalAPI.password =
       process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
+    this.settings.discordGuildIDs = JSON.parse(
+      process.env.DISCORD_GUILD_IDS
+    ) as Array<string>;
     this.initialize().then();
   }
 
