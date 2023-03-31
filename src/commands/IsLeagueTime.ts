@@ -15,14 +15,18 @@ export default class IsLeagueTime extends Command {
     const definition = new SlashCommandBuilder()
       .setName('isleaguetime')
       .setDescription('Checks whether League Time is currently active. League Time is defined as 10 PM - 6 AM.');
-    super(client, {
-      name: 'isleaguetime',
-      enabled: true,
-      description: 'Checks whether League Time is currently active. League Time is defined as 10 PM - 6 AM.',
-      category: 'Information',
-      usage: client.settings.prefix.concat('isleaguetime'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'isleaguetime',
+        enabled: true,
+        description: 'Checks whether League Time is currently active. League Time is defined as 10 PM - 6 AM.',
+        category: 'Information',
+        usage: client.settings.prefix.concat('isleaguetime'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -37,7 +41,7 @@ export default class IsLeagueTime extends Command {
     // September 20 CURRENT_YEAR.
     const isSummer = Interval.fromDateTimes(
       DateTime.fromObject({ day: 20, month: 6, zone: 'America/Los_Angeles' }),
-      DateTime.fromObject({ day: 20, month: 9, zone: 'America/Los_Angeles' }),
+      DateTime.fromObject({ day: 20, month: 9, zone: 'America/Los_Angeles' })
     ).contains(DateTime.now());
 
     // Next, we'll check whether the current time is between 10 PM today and 6 AM tomorrow,
@@ -45,13 +49,15 @@ export default class IsLeagueTime extends Command {
     //
     // We also check if the current time is between 10 PM yesterday and 6 AM today,
     // since after midnight the previous check doesn't work.
-    const isLeagueTime = Interval.fromDateTimes(
-      DateTime.fromFormat('10:00 PM', 't', { zone: 'America/Los_Angeles' }),
-      DateTime.fromFormat('6:00 AM', 't', { zone: 'America/Los_Angeles' }).plus({ days: 1 }),
-    ).contains(DateTime.now()) || Interval.fromDateTimes(
-      DateTime.fromFormat('10:00 PM', 't', { zone: 'America/Los_Angeles' }).minus({ days: 1 }),
-      DateTime.fromFormat('6:00 AM', 't', { zone: 'America/Los_Angeles' }),
-    ).contains(DateTime.now());
+    const isLeagueTime =
+      Interval.fromDateTimes(
+        DateTime.fromFormat('10:00 PM', 't', { zone: 'America/Los_Angeles' }),
+        DateTime.fromFormat('6:00 AM', 't', { zone: 'America/Los_Angeles' }).plus({ days: 1 })
+      ).contains(DateTime.now()) ||
+      Interval.fromDateTimes(
+        DateTime.fromFormat('10:00 PM', 't', { zone: 'America/Los_Angeles' }).minus({ days: 1 }),
+        DateTime.fromFormat('6:00 AM', 't', { zone: 'America/Los_Angeles' })
+      ).contains(DateTime.now());
 
     // Return the logic for League Time.
     if (isSummer) {

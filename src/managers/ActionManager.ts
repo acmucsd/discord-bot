@@ -21,10 +21,7 @@ import Logger from '../utils/Logger';
  */
 @Service()
 export default class {
-  public commands: Collection<string, Command> = new Collection<
-    string,
-    Command
-  >();
+  public commands: Collection<string, Command> = new Collection<string, Command>();
 
   /**
    * Parses files into commands from the configured command path.
@@ -44,7 +41,7 @@ export default class {
       if (err) Logger.error(err);
 
       // For every Command file...
-      files.forEach(async (cmd) => {
+      files.forEach(async cmd => {
         // Check if it is a directory, because if it is...
         if (statSync(join(commands, cmd)).isDirectory()) {
           // Recursively deal with that, since we may want to split commands by module
@@ -52,9 +49,7 @@ export default class {
           this.initializeCommands(client);
         } else {
           // Import our Command file.
-          const commandImport = await import(
-            join(__dirname, '../../', `${commands}/${cmd.replace('ts', 'js')}`)
-          );
+          const commandImport = await import(join(__dirname, '../../', `${commands}/${cmd.replace('ts', 'js')}`));
 
           // Get the default export.
           const LoadedCommand = commandImport.default;
@@ -71,30 +66,21 @@ export default class {
       });
 
       // Now we upload the Slash Command registration payload to Discord.
-      const restAPI = new REST({ version: '9' }).setToken(
-        client.settings.token,
-      );
+      const restAPI = new REST({ version: '9' }).setToken(client.settings.token);
 
       (async () => {
         Logger.info('Loading Slash Commands on Discord Gateway...', {
           eventType: 'slashCommandLoading',
         });
-        await restAPI.put(
-          Routes.applicationCommands(client.settings.clientID),
-          { body: slashCommands },
-        );
+        await restAPI.put(Routes.applicationCommands(client.settings.clientID), { body: slashCommands });
         await Promise.all(
-          client.settings.discordGuildIDs.map((id) => {
+          client.settings.discordGuildIDs.map(id => {
             Logger.info(`Loading Slash Commands for Guild ${id}`);
             Logger.info(typeof id);
-            return restAPI.put(
-              Routes.applicationGuildCommands(
-                client.settings.clientID,
-                id.toString(),
-              ),
-              { body: slashCommands },
-            );
-          }),
+            return restAPI.put(Routes.applicationGuildCommands(client.settings.clientID, id.toString()), {
+              body: slashCommands,
+            });
+          })
         );
         Logger.info('Loaded Slash Commands on Discord Gateway!', {
           eventType: 'slashCommandLoaded',
@@ -116,11 +102,9 @@ export default class {
       if (err) Logger.error(err);
 
       // For every Event file...
-      files.forEach(async (evt) => {
+      files.forEach(async evt => {
         // Import our Event file.
-        const eventImport = await import(
-          join(__dirname, '../../', `${events}/${evt.replace('ts', 'js')}`)
-        );
+        const eventImport = await import(join(__dirname, '../../', `${events}/${evt.replace('ts', 'js')}`));
 
         // Get the default export.
         const LoadedEvent = eventImport.default;
@@ -134,10 +118,7 @@ export default class {
         // We lowercase the first letter, since that's how events are written down in Discord.js,
         // and use the abstract `run` method we implemented in the file as the callback for our
         // event.
-        client.on(
-          eventName.charAt(0).toLowerCase() + eventName.slice(1),
-          (...args: string[]) => event.run(...args),
-        );
+        client.on(eventName.charAt(0).toLowerCase() + eventName.slice(1), (...args: string[]) => event.run(...args));
       });
     });
   }

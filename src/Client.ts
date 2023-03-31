@@ -41,10 +41,7 @@ export default class Client extends DiscordClient implements BotClient {
    * @param actionManager An ActionManager class to run. Injected by TypeDI.
    * @param portalAPIManager A PortalAPIManager class to run. Injected by TypeDI
    */
-  constructor(
-    private actionManager: ActionManager,
-    private portalAPIManager: PortalAPIManager,
-  ) {
+  constructor(private actionManager: ActionManager, private portalAPIManager: PortalAPIManager) {
     super(
       configuration.clientOptions || {
         intents: [
@@ -56,7 +53,7 @@ export default class Client extends DiscordClient implements BotClient {
           'GUILD_MESSAGE_REACTIONS',
           'DIRECT_MESSAGE_REACTIONS',
         ],
-      },
+      }
     );
     this.settings = configuration;
     // We absolutely need some envvars, so if they're not in our .env file, nuke the initialization.
@@ -95,9 +92,7 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.acmurl.password = process.env.ACMURL_PASSWORD;
     this.settings.portalAPI.username = process.env.MEMBERSHIP_PORTAL_API_USERNAME;
     this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
-    this.settings.discordGuildIDs = JSON.parse(
-      process.env.DISCORD_GUILD_IDS,
-    ) as Array<string>;
+    this.settings.discordGuildIDs = JSON.parse(process.env.DISCORD_GUILD_IDS) as Array<string>;
     this.initialize().then();
   }
 

@@ -161,16 +161,11 @@ export interface BotClient extends Client {
 
 export class BotInitializationError extends Error {
   constructor(missingEnvVar: string) {
-    super(
-      `Could not construct Client class: missing ${missingEnvVar} in envvars`,
-    );
-    Logger.error(
-      `Could not construct Client class: missing ${missingEnvVar} in envvars`,
-      {
-        eventType: 'initError',
-        error: `missing ${missingEnvVar} in envvars`,
-      },
-    );
+    super(`Could not construct Client class: missing ${missingEnvVar} in envvars`);
+    Logger.error(`Could not construct Client class: missing ${missingEnvVar} in envvars`, {
+      eventType: 'initError',
+      error: `missing ${missingEnvVar} in envvars`,
+    });
 
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, BotInitializationError.prototype);
@@ -203,7 +198,4 @@ export type AnyChannel = TextChannel | DMChannel | NewsChannel;
 /**
  * Wrapper type for Commands to be able to return proper Message responses.
  */
-export type InteractionPayload =
-  | string
-  | MessagePayload
-  | InteractionReplyOptions;
+export type InteractionPayload = string | MessagePayload | InteractionReplyOptions;
