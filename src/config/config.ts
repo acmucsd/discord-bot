@@ -1,8 +1,7 @@
 import { BotSettings } from '../types';
 
 export default {
-  apiKeys: {
-  },
+  apiKeys: {},
   acmurl: {
     username: '',
     password: '',
@@ -24,10 +23,12 @@ export default {
     password: '',
   },
   presence: {
-    activities: [{
-      type: 'WATCHING',
-      name: 'acmurl.com/poggers',
-    }],
+    activities: [
+      {
+        type: 'WATCHING',
+        name: 'acmurl.com/poggers',
+      },
+    ],
     status: 'online',
   },
   token: '',
@@ -36,4 +37,5 @@ export default {
     commands: 'src/commands',
     events: 'src/events',
   },
+  discordGuildIDs: [],
 } as BotSettings;
