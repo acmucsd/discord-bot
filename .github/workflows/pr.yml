@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v2
+      # We need to run the following commands so yarn can successfully install dependencies.
+      # Because node-canvas depends on cairo and pango to compile on the system, we install them here.
       - name: Install dependencies for node-canvas
         run: |
           sudo apt update
