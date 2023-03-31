@@ -9,11 +9,11 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v2
-      - name: Install dependencies
+      - name: Install dependencies for node-canvas
         run: |
           sudo apt update
           sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
-      - name: Install
-          run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        run: 'yarn install --frozen-lockfile'
       - name: Lint
         run: yarn lint
