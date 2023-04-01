@@ -58,7 +58,7 @@ export default class Everyone extends Command {
 
     super(client, {
       name: 'everyone',
-      enabled: false,
+      enabled: true,
       description: 'Ping everyone.',
       category: 'Jokes',
       usage: client.settings.prefix.concat('everyone'),
