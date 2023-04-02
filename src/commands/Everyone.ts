@@ -5,7 +5,9 @@ import stream from 'stream';
 import got from 'got';
 import { v4 as newUUID } from 'uuid';
 import gm from 'gm';
-import { createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
+import {
+  createWriteStream, existsSync, mkdirSync, readFileSync,
+} from 'fs';
 import { promisify } from 'util';
 import Command from '../Command';
 import { BotClient } from '../types';
@@ -54,18 +56,14 @@ export default class Everyone extends Command {
       .setName('everyone')
       .setDescription('Ping everyone.');
 
-    super(
-      client,
-      {
-        name: 'everyone',
-        enabled: false,
-        description: 'Ping everyone.',
-        category: 'Jokes',
-        usage: client.settings.prefix.concat('everyone'),
-        requiredPermissions: ['SEND_MESSAGES'],
-      },
-      definition
-    );
+    super(client, {
+      name: 'everyone',
+      enabled: false,
+      description: 'Ping everyone.',
+      category: 'Jokes',
+      usage: client.settings.prefix.concat('everyone'),
+      requiredPermissions: ['SEND_MESSAGES'],
+    }, definition);
 
     this.rateLimit = new Map<string, DateTime>();
     this.pingCount = new Map<string, number>();
@@ -81,10 +79,7 @@ export default class Everyone extends Command {
    * @param guild The guild ID. The guild icon must be downloaded before running this command.
    * @param count The ping count to put on the image.
    */
-  public static async generatePingIcon(
-    guild: string,
-    count: number
-  ): Promise<string> {
+  public static async generatePingIcon(guild: string, count: number): Promise<string> {
     // We'll crop our number for the image generation. If higher
     // than 10000, we'll stop.
     const pingText = count > 9999 ? '9999+' : count.toString();
@@ -107,8 +102,7 @@ export default class Everyone extends Command {
         // These are ImageMagick primitives, we'll explain one-by-one.
         // First get the fill and stroke set up for the pill itself.
         // Red fill...
-        image = image
-          .fill('#EF4747')
+        image = image.fill('#EF4747')
           // Black stroke...
           .stroke('#000000', 35)
           // Then draw the circle via coordinates
@@ -123,8 +117,7 @@ export default class Everyone extends Command {
       case 2:
         // 2-digit number of pings. Here we need a slightly larger pill,
         // so that needs a round rectangle.
-        image = image
-          .fill('#EF4747')
+        image = image.fill('#EF4747')
           .stroke('#000000', 30)
           // Only extra argument here is roundness of rectangle corners.
           // Let's just set a high number that looks kind of like the
@@ -139,8 +132,7 @@ export default class Everyone extends Command {
       case 3:
         // 3-digit number of pings. SLIGHTLY larger pill, we're going to
         // minimize font size more in this case.
-        image = image
-          .fill('#EF4747')
+        image = image.fill('#EF4747')
           .stroke('#000000', 30)
           .drawRectangle(335, 495, 755, 750, 80)
           .stroke('#FFFFFF', 2)
@@ -152,8 +144,7 @@ export default class Everyone extends Command {
       case 4:
         // 4-digit number of pings. Highest we're gonna go, but we need a
         // bigger pill for this one, too.
-        image = image
-          .fill('#EF4747')
+        image = image.fill('#EF4747')
           .stroke('#000000', 30)
           .drawRectangle(325, 495, 765, 750, 80)
           .stroke('#FFFFFF', 2)
@@ -164,8 +155,7 @@ export default class Everyone extends Command {
 
       default:
         // 9999+ case, basically.
-        image = image
-          .fill('#EF4747')
+        image = image.fill('#EF4747')
           .stroke('#000000', 30)
           .drawRectangle(325, 495, 765, 750, 80)
           .stroke('#FFFFFF', 2)
@@ -181,9 +171,7 @@ export default class Everyone extends Command {
         if (err) {
           reject(new Error(`Could not write image with ping on it: ${err}`));
         }
-        const imageEncoding = readFileSync(`guild_pics/${guild}_ping.png`, {
-          encoding: 'base64',
-        });
+        const imageEncoding = readFileSync(`guild_pics/${guild}_ping.png`, { encoding: 'base64' });
         resolve(imageEncoding);
       });
     });
@@ -198,9 +186,7 @@ export default class Everyone extends Command {
     const { guild } = interaction;
     if (guild === null) {
       // Not a guild, we can't change icons.
-      await super.edit(interaction, {
-        content: "I can't change icons here, sorry.",
-      });
+      await super.edit(interaction, { content: "I can't change icons here, sorry." });
       return;
     }
 
@@ -211,11 +197,7 @@ export default class Everyone extends Command {
       // now - lastCall = ...
       const { minutes } = now.diff(lastCall, ['minutes']).toObject();
       if (minutes !== undefined && minutes < 5) {
-        await super.edit(interaction, {
-          content: `That's kinda fast, maybe do it <t:${Math.trunc(
-            lastCall.plus({ minutes: 5 }).toSeconds()
-          )}:R>`,
-        });
+        await super.edit(interaction, { content: `That's kinda fast, maybe do it <t:${Math.trunc(lastCall.plus({ minutes: 5 }).toSeconds())}:R>` });
         return;
       }
     }
@@ -235,9 +217,7 @@ export default class Everyone extends Command {
     if (pingCount === undefined) {
       const iconURL = guild.iconURL();
       if (iconURL === null) {
-        await super.edit(interaction, {
-          content: "Guess this place has no custom icon. Sorry, can't ping.",
-        });
+        await super.edit(interaction, { content: "Guess this place has no custom icon. Sorry, can't ping." });
         return;
       }
 
@@ -249,7 +229,7 @@ export default class Everyone extends Command {
       // Get the guild icon, save it.
       await pipeline(
         got.stream(iconURL),
-        createWriteStream(`guild_pics/${currentGuildID}.png`)
+        createWriteStream(`guild_pics/${currentGuildID}.png`),
       );
 
       // We'll also want to resize the icon once we're done,
@@ -265,13 +245,8 @@ export default class Everyone extends Command {
                 interface: 'GM',
                 uuid,
               });
-              await super.edit(
-                interaction,
-                `Something went wrong. Not sure. *(Error UUID: ${uuid})*`
-              );
-              reject(
-                new Error(`Error writing original guild icon to disk: ${err}`)
-              );
+              await super.edit(interaction, `Something went wrong. Not sure. *(Error UUID: ${uuid})*`);
+              reject(new Error(`Error writing original guild icon to disk: ${err}`));
             }
             resolve();
           });
@@ -284,18 +259,12 @@ export default class Everyone extends Command {
     }
 
     // Up the ping count.
-    this.pingCount.set(
-      currentGuildID,
-      pingCount !== undefined ? pingCount + 1 : 1
-    );
+    this.pingCount.set(currentGuildID, pingCount !== undefined ? pingCount + 1 : 1);
     const newPingCount = this.pingCount.get(currentGuildID) as number;
 
     // Now we have the image, we can now generate it.
     // Just call our other function as well. Make it easy on ourselves.
-    const newIcon = await Everyone.generatePingIcon(
-      currentGuildID,
-      newPingCount
-    );
+    const newIcon = await Everyone.generatePingIcon(currentGuildID, newPingCount);
     const newIconBuffer = Buffer.from(newIcon, 'base64');
 
     // Set the new icon!
