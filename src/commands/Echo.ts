@@ -15,17 +15,21 @@ export default class Echo extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('echo')
-      .addStringOption((option) => option.setName('message').setDescription('The message to repeat.').setRequired(true))
+      .addStringOption(option => option.setName('message').setDescription('The message to repeat.').setRequired(true))
       .setDescription('Repeats your message exactly.');
-    super(client, {
-      name: 'echo',
-      boardRequired: true,
-      enabled: true,
-      description: 'Repeats your message exactly.',
-      category: 'Utility',
-      usage: client.settings.prefix.concat('echo').concat('<message>'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'echo',
+        boardRequired: true,
+        enabled: true,
+        description: 'Repeats your message exactly.',
+        category: 'Utility',
+        usage: client.settings.prefix.concat('echo').concat('<message>'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {

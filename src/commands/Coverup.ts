@@ -17,15 +17,20 @@ export default class Coverup extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('coverup')
-      .setDescription('Marks a message with spoiler tags, including attachments. Won\'t work with Nitro files.');
-    super(client, {
-      name: 'coverup',
-      enabled: true,
-      description: 'Marks the contests of a message with spoiler tags, including attachments. Send the command and reply with another message to spoiler it. The bot will be unable to send videos that a normal user cannot (i.e. large files, etc).',
-      category: 'Utility',
-      usage: client.settings.prefix.concat('coverup'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+      .setDescription("Marks a message with spoiler tags, including attachments. Won't work with Nitro files.");
+    super(
+      client,
+      {
+        name: 'coverup',
+        enabled: true,
+        description:
+          'Marks the contests of a message with spoiler tags, including attachments. Send the command and reply with another message to spoiler it. The bot will be unable to send videos that a normal user cannot (i.e. large files, etc).',
+        category: 'Utility',
+        usage: client.settings.prefix.concat('coverup'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   /**
@@ -45,13 +50,13 @@ export default class Coverup extends Command {
     const author = await this.client.users.fetch(interaction.member!.user.id);
     const authorReplyFilter = (reply: Message) => reply.author.id === interaction.user.id;
     await super.respond(interaction, {
-      content: 'Send a message in this channel and I\'ll cover it up for you!',
+      content: "Send a message in this channel and I'll cover it up for you!",
       ephemeral: true,
     });
     try {
       if (interaction.channel === null) {
         await super.edit(interaction, {
-          content: 'Wait, never mind, there\' no channel I can cover this up in. Wait, what?',
+          content: "Wait, never mind, there' no channel I can cover this up in. Wait, what?",
           ephemeral: true,
         });
         return;
@@ -87,10 +92,11 @@ export default class Coverup extends Command {
         // Go through each attachment and prepend "SPOILER_" to the name, so it's
         // marked as a spoiler.
         const spoileredAttachments = messageToCoverUp.attachments.map(
-          (attachment) => new MessageAttachment(attachment.url, `SPOILER_${attachment.name}`),
+          attachment => new MessageAttachment(attachment.url, `SPOILER_${attachment.name}`)
         );
         // Send it.
-        const captionContents = messageToCoverUp.content === '' ? '' : `|| ${messageToCoverUp.content.replace('|', '\\"')} ||`;
+        const captionContents =
+          messageToCoverUp.content === '' ? '' : `|| ${messageToCoverUp.content.replace('|', '\\"')} ||`;
         await messageToCoverUp.channel.send({
           content: `**Covered up by ${author}**\n${captionContents}`,
           files: spoileredAttachments,
@@ -118,7 +124,8 @@ export default class Coverup extends Command {
       if (error.message === 'Request entity too large') {
         if (interaction.channel === null) {
           await super.edit(interaction, {
-            content: 'Wait, so I got an error, and yet I\'m in an non-existent channel? I\'m confused, blame my maintainer.',
+            content:
+              "Wait, so I got an error, and yet I'm in an non-existent channel? I'm confused, blame my maintainer.",
             ephemeral: true,
           });
           return;
@@ -128,7 +135,8 @@ export default class Coverup extends Command {
         const lastMessage = messages.last();
         if (lastMessage === undefined) {
           await super.edit(interaction, {
-            content: 'Wait, so I got an error, and yet there\'s no messages for me to delete? I\'m confused, blame my maintainer.',
+            content:
+              "Wait, so I got an error, and yet there's no messages for me to delete? I'm confused, blame my maintainer.",
             ephemeral: true,
           });
           return;
@@ -144,7 +152,7 @@ export default class Coverup extends Command {
           uuid: errorUUID,
         });
         await super.edit(interaction, {
-          content: 'Your attachments are too powerful! I\'m not a Nitro user :(',
+          content: "Your attachments are too powerful! I'm not a Nitro user :(",
           ephemeral: true,
         });
       } else {

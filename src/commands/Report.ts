@@ -11,15 +11,19 @@ export default class Report extends Command {
     const definition = new SlashCommandBuilder()
       .setName('report')
       .setDescription("Report an incident anonymously to ACM's board.");
-    super(client, {
-      name: 'report',
-      boardRequired: true,
-      enabled: true,
-      description: "Report an incident anonymously to ACM's board.",
-      category: 'Moderation',
-      usage: client.settings.prefix.concat('report'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'report',
+        boardRequired: true,
+        enabled: true,
+        description: "Report an incident anonymously to ACM's board.",
+        category: 'Moderation',
+        usage: client.settings.prefix.concat('report'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {

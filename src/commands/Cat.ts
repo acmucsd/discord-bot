@@ -16,14 +16,18 @@ export default class Cat extends Command {
     const definition = new SlashCommandBuilder()
       .setName('cat')
       .setDescription('Returns a random cute cat picture fetched from The Cat API. (https://thecatapi.com/)');
-    super(client, {
-      name: 'cat',
-      enabled: true,
-      description: 'Returns a random cute cat picture fetched from The Cat API. (https://thecatapi.com/)',
-      category: 'Picture',
-      usage: client.settings.prefix.concat('cat'),
-      requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'cat',
+        enabled: true,
+        description: 'Returns a random cute cat picture fetched from The Cat API. (https://thecatapi.com/)',
+        category: 'Picture',
+        usage: client.settings.prefix.concat('cat'),
+        requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -40,13 +44,16 @@ export default class Cat extends Command {
         });
       } else {
         // If the cat picture URL is undefined, log it.
-        Logger.error('Error when returning response for \'cat\' command: undefined URL for image', {
+        Logger.error("Error when returning response for 'cat' command: undefined URL for image", {
           eventType: 'interfaceError',
           interface: 'catAPI',
           error: 'undefined URL for image',
         });
         // Alert the user.
-        await super.edit(interaction, "I can't find a cat image right now. It's possible I got rate-limited (asked for too many cat pics this month).");
+        await super.edit(
+          interaction,
+          "I can't find a cat image right now. It's possible I got rate-limited (asked for too many cat pics this month)."
+        );
         return;
       }
     } catch (e) {
@@ -68,11 +75,11 @@ export default class Cat extends Command {
    * @private
    */
   private async getCatPictureURL(): Promise<string> {
-    const catAPIResponse = await got('https://api.thecatapi.com/v1/images/search', {
+    const catAPIResponse = (await got('https://api.thecatapi.com/v1/images/search', {
       headers: {
         'x-api-key': this.client.settings.apiKeys.catAPI,
       },
-    }).json() as any;
+    }).json()) as any;
 
     // return "undefined" if absolutely anything happens that is not intended behavior.
     return catAPIResponse !== undefined ? catAPIResponse[0].url : undefined;
