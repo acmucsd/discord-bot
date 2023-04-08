@@ -14,6 +14,7 @@ import Logger from '../utils/Logger';
 import QR from './QR';
 import { createCanvas, loadImage, Image } from 'canvas';
 import fs from 'fs';
+import { title } from 'process';
 
 /**
  * This Command DM's the caller the checkin code and Express Checkin link for any events
@@ -178,7 +179,7 @@ export default class Checkin extends Command {
    */
   private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL) {
     // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
-    const eventQrCode = QR.generateQR(expressCheckinURL.toString(), "", "")
+    const eventQrCode = QR.generateQR(expressCheckinURL.toString(), "", "");
     
     // Creating slide with Canvas
     // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
@@ -188,87 +189,79 @@ export default class Checkin extends Command {
     context.fillRect(0, 0, 1920, 1080);
     
     // draw background
-    const background = await loadImage('./src/assets/acm-background.png')
+    const background = await loadImage('./src/assets/acm-background.png');
     context.drawImage(background, 0, 0, 1920, 1080);
 
     // draw qr code
     const angleInRadians = Math.PI / 4;
     context.rotate(angleInRadians);
-    const qrImg = await loadImage(await eventQrCode.toDataURL())
+    const qrImg = await loadImage(await eventQrCode.toDataURL());
     context.drawImage(qrImg, 400, -300, 550, 550);
     context.rotate(-1 * angleInRadians);
 
+    // members.acmucsd.com
+    context.textAlign = "center";
+    context.font = "40pt 'DM Sans'";
+    context.fillStyle = "#727272EB";
+    context.fillText("members.acmucsd.com", 1550, 1000);
+
+    // for
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(1000, 400);
+    context.lineTo(1325, 400);
+    context.stroke();
+    context.font = "45pt 'DM Sans'";
+    context.fillStyle = "#000";
+    context.fillText("for", 1400, 415);
+    context.beginPath();
+    context.moveTo(1475, 400);
+    context.lineTo(1800, 400);
+    context.stroke();
+
+    // event title
+    let titleSize = Math.max(Math.min(event.title.length, 70), 8);
+    titleSize = - 2 * titleSize / 3 + 65;
+    context.font = "bold " + titleSize + "pt 'DM Sans'";
+    context.fillText(event.title, 1400, 520);
+
+    // everything starting here has a shadow
+    context.shadowColor = "#00000040";
+    context.shadowBlur = 5;
+
     // write ACM at UCSD
+    context.shadowOffsetY = 3.61;
     context.font = "bold 80pt 'DM Sans'";
     context.textAlign = "right";
-    context.fillStyle = "#000";
     context.fillText("ACM", 400, 975);
     context.font = "80pt 'DM Sans'";
     context.textAlign = "left";
     context.fillText(" at UCSD", 400, 975);
 
     // Check-in Code
+    context.shadowOffsetY = 4.41;
     context.font = "70pt 'DM Sans'";
     context.textAlign = "center";
     context.fillText("Check-in Code", 1400, 320);
 
-    // for
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(1000, 400);
-    context.lineTo(1300, 400);
-    context.stroke();
-    context.font = "50pt 'DM Sans'";
-    context.fillText("for", 1400, 415);
-    context.beginPath();
-    context.moveTo(1500, 400);
-    context.lineTo(1800, 400);
-    context.stroke();
-
-    // event name
-    context.font = "bold 60pt 'DM Sans'";
-    // if(event.title.length )
-    // context.fillText(event.title, 1400, 520);
-    context.fillText("wwwwwwwwwwwwwwww", 1400, 520);
-
     // code
-    // const checkinCode = event.attendanceCode;
-    const checkinCode = "llllllllllllllllllllllllllllllllllllllllllllllllll";
-    console.log(JSON.stringify(event));
-    // const checkinCode = "test";
-
+    const checkinCode = event.attendanceCode;
+    let checkinSize = Math.max(Math.min(checkinCode.length, 70), 30);
+    checkinSize = - 2 * checkinSize / 3 + 65;
+    context.font = "bold " + checkinSize + "pt 'DM Sans'";
     const textMetrics = context.measureText(checkinCode);
-    const codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
+    let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
+    // add 120 for padding on left and right side
+    codeWidth += 120;
     context.fillStyle = "#70BAFF";
     context.beginPath();
     // roundRect parameters: x, y, width, height, radius
-    context.roundRect(1400 - (codeWidth) / 2, 600, codeWidth, 120, 20);
+    context.roundRect(1400 - (codeWidth) / 2, 600, codeWidth, 136, 20);
     context.fill();
-    context.font = "bold 50pt 'DM Sans'";
+    context.shadowOffsetY = 6.62;
+    context.font = "bold " + checkinSize + "pt 'DM Sans'";
     context.fillStyle = "#fff";
-    context.fillText(checkinCode, 1400, 680);
-
-    // const codeWidth = (checkinCode.length + 1) * 35 + 20;
-    // context.fillStyle = "#70BAFF";
-    // context.beginPath();
-    // context.roundRect(1400 - (codeWidth) / 2, 600, codeWidth, 120, 20);
-    // context.fill();
-    // context.font = "bold 50pt 'DM Sans'";
-    // context.fillStyle = "#fff";
-    
-    // context.shadowColor = "#70BAFF";
-    // context.shadowBlur = 10;
-    // context.lineWidth = 10;
-    // context.strokeStyle = "white";
-    // context.strokeText(checkinCode, 1400, 680);
-    // context.shadowBlur = 0;
-    // context.fillStyle = "#70BAFF";
-    // context.fillText(checkinCode, 1400, 680);
-
-    // members.acmucsd.com
-    context.font = "40pt 'DM Sans'";
-    context.fillStyle = "#727272EB";
-    context.fillText("members.acmucsd.com", 1550, 1000);
+    context.fillText(checkinCode, 1400, 688);
     
     // Get the Data URL of the image (base-64 encoded string of image).
     // Easier to attach than saving files.
