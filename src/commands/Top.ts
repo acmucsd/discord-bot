@@ -217,7 +217,7 @@ export default class Top extends Command {
     // If we want the "All-Time" leaderboard, we don't need bounds, so just call the API
     // with the limit parameter.
     if (leaderboardType === 'All-Time') {
-      const portalAPIResponse = (await got('https://api.acmucsd.com/api/v2/leaderboard', {
+      const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/leaderboard`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.client.apiToken}`,
@@ -251,7 +251,7 @@ export default class Top extends Command {
     const endBound = Math.round(interval.end.getTime() / 1000);
 
     // Query as usual.
-    const portalAPIResponse = (await got('https://api.acmucsd.com/api/v2/leaderboard', {
+    const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/leaderboard`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,

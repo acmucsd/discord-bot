@@ -94,6 +94,7 @@ export interface BotSettings {
    * Membership Portal API admin account credentials.
    */
   portalAPI: {
+    url: string;
     username: string;
     password: string;
   };
