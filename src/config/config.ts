@@ -40,4 +40,5 @@ export default {
     events: 'src/events',
   },
   discordGuildIDs: [],
+  matchRoleID: '',
 } as BotSettings;

@@ -61,13 +61,13 @@ export default class Match extends Command {
    * creates a private guild thread for them to communicate, and sends a introduction message in the thread.
    * @param interaction The original command interaction (calling the /match command)
    */
-  private static async createMatches(interaction: CommandInteraction): Promise<void> {
+  private async createMatches(interaction: CommandInteraction): Promise<void> {
     // This is a collection mapping role IDs to Role objects.
     const roleMap = await interaction.guild?.roles.fetch();
     await interaction.guild?.members.fetch();
     if (roleMap) {
       // We get the role that we want to use when picking members to match.
-      const role = await roleMap.get('1098134095889973261');
+      const role = await roleMap.get(this.client.settings.matchRoleID);
       if (role) {
         // Next, we get the list of members that have the given row.
         const memberList = role.members.map(user => user);
@@ -87,7 +87,14 @@ export default class Match extends Command {
             memberPairings.push(pairedMembers);
           }
 
-          memberPairings.forEach(async group => {
+          /**
+           * To prevent ourselves from hitting Discord's API rate limit (50 requests/second),
+           * we add a small delay between each creation of a group thread and execute them
+           * one at a time. This is why we use the more inefficient for ... of and await in loops.
+           */
+          /* eslint-disable no-await-in-loop */
+          // eslint-disable-next-line no-restricted-syntax
+          for (const group of memberPairings) {
             const groupAsString = group.map(member => member.toString()).join(', ');
             const memberTagsAsString = group.map(member => member.displayName).join(', ');
             const channel = interaction.channel as TextChannel;
@@ -100,10 +107,13 @@ export default class Match extends Command {
             group.forEach(member => {
               thread.members.add(member);
             });
-            thread.send(
+            await thread.send(
               `# :wave: Hello ${groupAsString} – time to meet up for donuts!\n## I'm here to help you get to know your teammates by pairing everyone up every week.\n## Why don't you all pick a time to meet and hang out?`
             );
-          });
+            // Wait 200 ms before executing the next set of memberPairings.
+            await setTimeout(() => {}, 200);
+          }
+          /* eslint-enable no-await-in-loop */
         }
       }
     }
@@ -138,7 +148,7 @@ export default class Match extends Command {
         await buttonInteraction.editReply({ content: 'Matching members!' });
         // Remove the button so they can't press it again.
         await super.edit(interaction, { components: [] });
-        await Match.createMatches(interaction);
+        await this.createMatches(interaction);
         await buttonInteraction.editReply({ content: 'Members successfully matched!' });
       })
       .catch(async () => {

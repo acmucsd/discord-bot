@@ -135,6 +135,11 @@ export interface BotSettings {
    * List of Discord Guild (server) IDs to speed up porting of slash commands.
    */
   discordGuildIDs: Array<string>;
+
+  /**
+   * ID for the role we use to match members in our /match command.
+   */
+  matchRoleID: string;
 }
 
 /**
