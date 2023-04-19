@@ -73,6 +73,9 @@ export default class Client extends DiscordClient implements BotClient {
     if (!process.env.ACMURL_PASSWORD) {
       throw new BotInitializationError('ACMURL Password');
     }
+    if (!process.env.MEMBERSHIP_PORTAL_API_URL) {
+      throw new BotInitializationError('Membership Portal API URL');
+    }
     if (!process.env.MEMBERSHIP_PORTAL_API_USERNAME) {
       throw new BotInitializationError('Membership Portal API Username');
     }
@@ -90,6 +93,7 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
     this.settings.acmurl.username = process.env.ACMURL_USERNAME;
     this.settings.acmurl.password = process.env.ACMURL_PASSWORD;
+    this.settings.portalAPI.url = process.env.MEMBERSHIP_PORTAL_API_URL;
     this.settings.portalAPI.username = process.env.MEMBERSHIP_PORTAL_API_USERNAME;
     this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
     this.settings.discordGuildIDs = JSON.parse(process.env.DISCORD_GUILD_IDS) as Array<string>;

@@ -48,7 +48,7 @@ export default class {
    */
   public async loginPortal(client: BotClient): Promise<void> {
     const portalAPIResponse = (await got
-      .post('https://api.acmucsd.com/api/v2/auth/login', {
+      .post(`${client.settings.portalAPI.url}/auth/login`, {
         headers: {
           'Content-Type': 'application/json',
         },
