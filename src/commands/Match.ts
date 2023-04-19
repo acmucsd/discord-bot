@@ -1,12 +1,19 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, GuildMember, TextChannel } from 'discord.js';
+import {
+  CommandInteraction,
+  GuildMember,
+  TextChannel,
+  Permissions,
+  MessageActionRow,
+  MessageButton,
+  Message,
+} from 'discord.js';
 import Command from '../Command';
 import { BotClient } from '../types';
 
 /**
- * Pings the user.
- *
- * Test Command left from the boilerplate.
+ * Matches together users with a special role in groups of 2 or 3 in a Guild private thread.
+ * This allows members to meet each other one-to-one and helps increase member engagement.
  */
 export default class Match extends Command {
   constructor(client: BotClient) {
@@ -26,6 +33,9 @@ export default class Match extends Command {
     );
   }
 
+  /**
+   * Takes an array of members and returns a new array of the members shuffled in random order.
+   */
   private static shuffle(array: GuildMember[]): GuildMember[] {
     let currentIndex = array.length;
     let randomIndex;
@@ -43,26 +53,26 @@ export default class Match extends Command {
       shuffledArray[currentIndex] = shuffledArray[randomIndex];
       shuffledArray[randomIndex] = swap;
     }
-
     return shuffledArray;
   }
 
-  public async run(interaction: CommandInteraction): Promise<void> {
-    await super.defer(interaction);
-
+  /**
+   * This function gets all members with the associated role, pairs them up in groups of 2 or 3,
+   * creates a private guild thread for them to communicate, and sends a introduction message in the thread.
+   * @param interaction The original command interaction (calling the /match command)
+   */
+  private static async createMatches(interaction: CommandInteraction): Promise<void> {
     // This is a collection mapping role IDs to Role objects.
     const roleMap = await interaction.guild?.roles.fetch();
     await interaction.guild?.members.fetch();
-    // await interaction.guild?.members.fetch();
     if (roleMap) {
       // We get the role that we want to use when picking members to match.
-      const role = await roleMap.get('1026674051982295131');
+      const role = await roleMap.get('1098134095889973261');
       if (role) {
         // Next, we get the list of members that have the given row.
         const memberList = role.members.map(user => user);
         // Now, we make the pairings for Donuts members.
         if (memberList) {
-          await interaction.channel?.send('we love donuts...\n');
           const shuffledMembersList = Match.shuffle(memberList);
           const memberPairings = [];
 
@@ -75,7 +85,6 @@ export default class Match extends Command {
               pairedMembers = shuffledMembersList.splice(0, 2);
             }
             memberPairings.push(pairedMembers);
-            interaction.channel?.send(JSON.stringify(pairedMembers.map(a => a?.toString())));
           }
 
           memberPairings.forEach(async group => {
@@ -98,7 +107,44 @@ export default class Match extends Command {
         }
       }
     }
+  }
 
-    await super.edit(interaction, { content: 'Done!', ephemeral: true });
+  public async run(interaction: CommandInteraction): Promise<void> {
+    await super.defer(interaction, true);
+    // We only allow members with Administrator permissions to run this command since it pings a lot of users.
+    if (!interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
+      await super.edit(interaction, {
+        content: 'You need to be an administrator to run this command!',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Next, we add a confirmation button to make sure the command isn't being run by accident.
+    const row = new MessageActionRow().addComponents(
+      new MessageButton().setCustomId('Confirm').setLabel('Confirm').setStyle('PRIMARY')
+    );
+    const message = (await interaction.editReply({
+      content: 'Are you sure you want to run this command?',
+      components: [row],
+    })) as Message;
+
+    // When the "Confirm" button is pressed, we can begin matching members.
+    message
+      .awaitMessageComponent({ componentType: 'BUTTON', time: 15000 })
+      .then(async buttonInteraction => {
+        // buttonInteraction is the interaction associated with pressing the button.
+        await buttonInteraction.deferReply({ ephemeral: true });
+        await buttonInteraction.editReply({ content: 'Matching members!' });
+        // Remove the button so they can't press it again.
+        await super.edit(interaction, { components: [] });
+        await Match.createMatches(interaction);
+        await buttonInteraction.editReply({ content: 'Members successfully matched!' });
+      })
+      .catch(async () => {
+        // This occurs when the max timeout on awaitMessageComponent is hit.
+        // We now remove the button so it can't be pressed.
+        await super.edit(interaction, { content: 'This command expired!', components: [] });
+      });
   }
 }
