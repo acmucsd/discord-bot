@@ -65,9 +65,7 @@ export default class Checkin extends Command {
 
     const isPublic = nowArgument !== null ? nowArgument : false;
     // By default, we want to include the slide.
-    console.log("widescreenArgument is " + widescreenArgument);
     const needsSlide = widescreenArgument !== null ? widescreenArgument : true;
-    console.log("needsSlide is" + needsSlide);
 
     // Defer the reply ephemerally only if it's a private command call.
     await super.defer(interaction, !isPublic);
@@ -198,11 +196,9 @@ export default class Checkin extends Command {
     if(needsSlide) {
       const eventQrCode = QR.generateQR(expressCheckinURL.toString(), "", "");
       qrCodeDataUrl = await this.createQRSlide(event, eventQrCode);
-      console.log("NEEDS A SLIDE!");
     } else {
       const eventQrCode = QR.generateQR(expressCheckinURL.toString(), event.title, `Check-in code: ${event.attendanceCode}`);
       qrCodeDataUrl = await eventQrCode.toDataURL();
-      console.log("DOES NOT NEED A SLIDE!");
     }
 
     return qrCodeDataUrl;
