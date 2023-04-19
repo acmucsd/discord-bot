@@ -17,20 +17,28 @@ export default class ACMURL extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('acmurl')
-      .addStringOption((option) => option.setName('shortlink').setDescription('The short ID of the url (eg. "discord")').setRequired(true))
-      .addStringOption((option) => option.setName('longlink').setDescription('The URL to shorten.').setRequired(true))
-      .addStringOption((option) => option.setName('description').setDescription('The description of the link in ACMURL\'s dashboard.'))
+      .addStringOption(option =>
+        option.setName('shortlink').setDescription('The short ID of the url (eg. "discord")').setRequired(true)
+      )
+      .addStringOption(option => option.setName('longlink').setDescription('The URL to shorten.').setRequired(true))
+      .addStringOption(option =>
+        option.setName('description').setDescription("The description of the link in ACMURL's dashboard.")
+      )
       .setDescription('Shortens the provided link into an ACMURL link.');
 
-    super(client, {
-      name: 'acmurl',
-      boardRequired: true,
-      enabled: true,
-      description: 'Shortens the provided link into an `ACMURL` link.',
-      category: 'Utility',
-      usage: client.settings.prefix.concat('acmurl <shortlink> <longlink> [description]'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'acmurl',
+        boardRequired: true,
+        enabled: true,
+        description: 'Shortens the provided link into an `ACMURL` link.',
+        category: 'Utility',
+        usage: client.settings.prefix.concat('acmurl <shortlink> <longlink> [description]'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -83,15 +91,11 @@ export default class ACMURL extends Command {
       if (error.message === 'error:keyword') {
         try {
           // Make a new one and return the old long link and new ACMURL
-          const [previousURL, newURL] = await this.handleExistingACMURL(
-            shortlink, longlink, linkTitle,
-          );
+          const [previousURL, newURL] = await this.handleExistingACMURL(shortlink, longlink, linkTitle);
           // Create an embed signalling an updated ACMURL.
           const shortenEmbed = new MessageEmbed()
             .setTitle('Updated shortened link!')
-            .setDescription(
-              `Short link: ${newURL}\nPreviously shortened link: ${previousURL}`,
-            )
+            .setDescription(`Short link: ${newURL}\nPreviously shortened link: ${previousURL}`)
             .setURL(newURL)
             .setColor('BLUE');
           await super.edit(interaction, {
@@ -106,7 +110,10 @@ export default class ACMURL extends Command {
             error: updateError,
             uuid: errorUUID,
           });
-          await super.edit(interaction, `An error occurred when attempting to update the short URL. *(Error UUID: ${errorUUID})*`);
+          await super.edit(
+            interaction,
+            `An error occurred when attempting to update the short URL. *(Error UUID: ${errorUUID})*`
+          );
         }
       } else {
         // If the error we had initially when adding the ACMURL is any other error,
@@ -130,9 +137,7 @@ export default class ACMURL extends Command {
    * @private
    * @returns Tuple of old URL on YOURLS and new ACMURL.
    */
-  private async handleExistingACMURL(
-    shortlink: string, longlink: string, title: string,
-  ): Promise<[string, string]> {
+  private async handleExistingACMURL(shortlink: string, longlink: string, title: string): Promise<[string, string]> {
     // get the old URL
     const previousURL = await this.expandACMURL(shortlink);
     // Add the new one.
@@ -150,17 +155,19 @@ export default class ACMURL extends Command {
    * @returns The new shortened ACMURL.
    */
   private async addACMURL(shortlink: string, longlink: string, title: string): Promise<string> {
-    const acmurlAPIResponse = await got.post('https://acmurl.com/yourls-api.php', {
-      form: {
-        username: this.client.settings.acmurl.username,
-        password: this.client.settings.acmurl.password,
-        action: 'shorturl',
-        keyword: shortlink,
-        url: longlink,
-        format: 'json',
-        title,
-      },
-    }).json() as any;
+    const acmurlAPIResponse = (await got
+      .post('https://acmurl.com/yourls-api.php', {
+        form: {
+          username: this.client.settings.acmurl.username,
+          password: this.client.settings.acmurl.password,
+          action: 'shorturl',
+          keyword: shortlink,
+          url: longlink,
+          format: 'json',
+          title,
+        },
+      })
+      .json()) as any;
 
     if (acmurlAPIResponse.status === 'fail') {
       throw new Error(acmurlAPIResponse.code);
@@ -175,15 +182,17 @@ export default class ACMURL extends Command {
    * @returns the link that `acmurl.com/shortlink` points to.
    */
   private async expandACMURL(shortlink: string): Promise<string> {
-    const acmurlAPIResponse = await got.post('https://acmurl.com/yourls-api.php', {
-      form: {
-        username: this.client.settings.acmurl.username,
-        password: this.client.settings.acmurl.password,
-        action: 'expand',
-        shorturl: shortlink,
-        format: 'json',
-      },
-    }).json() as any;
+    const acmurlAPIResponse = (await got
+      .post('https://acmurl.com/yourls-api.php', {
+        form: {
+          username: this.client.settings.acmurl.username,
+          password: this.client.settings.acmurl.password,
+          action: 'expand',
+          shorturl: shortlink,
+          format: 'json',
+        },
+      })
+      .json()) as any;
     return acmurlAPIResponse !== undefined ? acmurlAPIResponse.longurl : undefined;
   }
 

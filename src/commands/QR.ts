@@ -13,19 +13,30 @@ export default class QR extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('qr')
-      .addStringOption((option) => option.setName('content').setDescription('The content to put in the QR code.').setRequired(true))
-      .addStringOption((option) => option.setName('title').setDescription('The title of the QR. If empty, will use URL of QR code as title.').setRequired(false))
+      .addStringOption(option =>
+        option.setName('content').setDescription('The content to put in the QR code.').setRequired(true)
+      )
+      .addStringOption(option =>
+        option
+          .setName('title')
+          .setDescription('The title of the QR. If empty, will use URL of QR code as title.')
+          .setRequired(false)
+      )
       .setDescription('Generates a QR code with the provided text in it. Includes ACM logo!');
 
-    super(client, {
-      name: 'qr',
-      boardRequired: true,
-      enabled: true,
-      description: 'Generates an ACM-branded QR code with a provided text in it.',
-      category: 'Utility',
-      usage: client.settings.prefix.concat('qr <text> [title text]'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'qr',
+        boardRequired: true,
+        enabled: true,
+        description: 'Generates an ACM-branded QR code with a provided text in it.',
+        category: 'Utility',
+        usage: client.settings.prefix.concat('qr <text> [title text]'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   /**

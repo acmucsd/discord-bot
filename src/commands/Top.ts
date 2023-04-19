@@ -3,9 +3,7 @@ import got from 'got';
 import { chunk } from 'lodash';
 
 import { v4 as newUUID } from 'uuid';
-import {
-  getCurrentQuarter, getCurrentYear,
-} from 'ucsd-quarters-years';
+import { getCurrentQuarter, getCurrentYear } from 'ucsd-quarters-years';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
@@ -39,21 +37,29 @@ export default class Top extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('top')
-      .addIntegerOption((option) => option.setName('members').setDescription('Number of members to list.'))
-      .addStringOption((option) => option.setName('type')
-        .setDescription('Type of leaderboard (All-Time, Quarterly, Yearly)')
-        .addChoice('Yearly', 'Yearly')
-        .addChoice('Quarterly', 'Quarterly')
-        .addChoice('All-Time', 'All-Time'))
+      .addIntegerOption(option => option.setName('members').setDescription('Number of members to list.'))
+      .addStringOption(option =>
+        option
+          .setName('type')
+          .setDescription('Type of leaderboard (All-Time, Quarterly, Yearly)')
+          .addChoice('Yearly', 'Yearly')
+          .addChoice('Quarterly', 'Quarterly')
+          .addChoice('All-Time', 'All-Time')
+      )
       .setDescription('Shows the top N members on the Membership Portal leaderboard.');
-    super(client, {
-      name: 'top',
-      enabled: true,
-      description: 'Shows the top `number` members on the Membership Portal leaderboard. By default, show the top 10 on the all-time leaderboard. Optionally, you can filter by current quarter or academic year.',
-      category: 'Information',
-      usage: client.settings.prefix.concat('top [`number`: min 3, max 100] [type: "quarter" | "year"]'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'top',
+        enabled: true,
+        description:
+          'Shows the top `number` members on the Membership Portal leaderboard. By default, show the top 10 on the all-time leaderboard. Optionally, you can filter by current quarter or academic year.',
+        category: 'Information',
+        usage: client.settings.prefix.concat('top [`number`: min 3, max 100] [type: "quarter" | "year"]'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   /**
@@ -110,12 +116,12 @@ export default class Top extends Command {
       // they're in on the leaderboard.
       let leaderboardPositionIndex: number = 1;
       // For each set of 10 Users (page of the leaderboard)...
-      leaderboardPages.forEach((leaderboardPage) => {
+      leaderboardPages.forEach(leaderboardPage => {
         // Setup the description for the Embed of the particular page, to be used in the
         // final Paginated Embed.
         const leaderboardPageLines: string[] = [];
         // For each user in the current set of 10 Users...
-        leaderboardPage.forEach((user) => {
+        leaderboardPage.forEach(user => {
           // Setup the line for them on the page.
           // We'll treat 1st, 2nd and 3rd place as special, giving them emojis instead of
           // numbers. Every other position will be denoted by numbers.
@@ -127,16 +133,32 @@ export default class Top extends Command {
           // when the Profile page on the portal might have more info.
           switch (leaderboardPositionIndex) {
             case 1:
-              leaderboardPageLines.push(`:first_place: **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${user.uuid})**, ${user.points} points`);
+              leaderboardPageLines.push(
+                `:first_place: **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${
+                  user.uuid
+                })**, ${user.points} points`
+              );
               break;
             case 2:
-              leaderboardPageLines.push(`:second_place: **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${user.uuid})**, ${user.points} points`);
+              leaderboardPageLines.push(
+                `:second_place: **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${
+                  user.uuid
+                })**, ${user.points} points`
+              );
               break;
             case 3:
-              leaderboardPageLines.push(`:third_place: **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${user.uuid})**, ${user.points} points`);
+              leaderboardPageLines.push(
+                `:third_place: **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${
+                  user.uuid
+                })**, ${user.points} points`
+              );
               break;
             default:
-              leaderboardPageLines.push(`${leaderboardPositionIndex}. **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${user.uuid})**, ${user.points} points`);
+              leaderboardPageLines.push(
+                `${leaderboardPositionIndex}. **[${`${user.firstName} ${user.lastName}`}](https://members.acmucsd.com/profile/${
+                  user.uuid
+                })**, ${user.points} points`
+              );
               break;
           }
           leaderboardPositionIndex += 1;
@@ -172,7 +194,10 @@ export default class Top extends Command {
         error,
         uuid: errorUUID,
       });
-      await super.edit(interaction, `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`);
+      await super.edit(
+        interaction,
+        `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`
+      );
     }
   }
 
@@ -192,7 +217,7 @@ export default class Top extends Command {
     // If we want the "All-Time" leaderboard, we don't need bounds, so just call the API
     // with the limit parameter.
     if (leaderboardType === 'All-Time') {
-      const portalAPIResponse = await got('https:/testing.api.acmucsd.com/api/v2/leaderboard', {
+      const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/leaderboard`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.client.apiToken}`,
@@ -200,7 +225,7 @@ export default class Top extends Command {
         searchParams: {
           limit,
         },
-      }).json() as any;
+      }).json()) as any;
 
       if (portalAPIResponse.error !== null) {
         throw new Error(portalAPIResponse.error);
@@ -211,13 +236,13 @@ export default class Top extends Command {
     // We'll dynamically extract the start and end bounds for the portal API,
     // depending on type parameter. Portal API demands bounds to be given in
     // Unix seconds, so we'll convert.
-    const interval = leaderboardType === 'Quarterly'
-      ? getCurrentQuarter()
-      : getCurrentYear();
+    const interval = leaderboardType === 'Quarterly' ? getCurrentQuarter() : getCurrentYear();
 
     // We'll error out if by any change the quarters and years dataset is incomplete.
     if (!interval) {
-      throw new Error('Current quarter does not exist in dataset! Please add current quarter (if existent) to dataset at https://github.com/acmucsd/ucsd-quarters-years');
+      throw new Error(
+        'Current quarter does not exist in dataset! Please add current quarter (if existent) to dataset at https://github.com/acmucsd/ucsd-quarters-years'
+      );
     }
 
     // We'll need to convert from epoch milliseconds to seconds. We can use Luxon,
@@ -226,7 +251,7 @@ export default class Top extends Command {
     const endBound = Math.round(interval.end.getTime() / 1000);
 
     // Query as usual.
-    const portalAPIResponse = await got('https://testing.api.acmucsd.com/api/v2/leaderboard', {
+    const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/leaderboard`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,
@@ -236,7 +261,7 @@ export default class Top extends Command {
         to: endBound,
         limit,
       },
-    }).json() as any;
+    }).json()) as any;
 
     if (portalAPIResponse.error !== null) {
       throw new Error(portalAPIResponse.error);

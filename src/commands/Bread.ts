@@ -15,15 +15,22 @@ export default class Bread extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('bread')
-      .setDescription('Returns a random bread picture fetched from Unsplash. Notoriously inaccurate at classifying bread.');
-    super(client, {
-      name: 'bread',
-      enabled: true,
-      description: 'Returns a random bread picture fetched from the Unsplash API. (https://api.unsplash.com/). Notoriously inaccurate at classifying bread.',
-      category: 'Picture',
-      usage: client.settings.prefix.concat('bread'),
-      requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-    }, definition);
+      .setDescription(
+        'Returns a random bread picture fetched from Unsplash. Notoriously inaccurate at classifying bread.'
+      );
+    super(
+      client,
+      {
+        name: 'bread',
+        enabled: true,
+        description:
+          'Returns a random bread picture fetched from the Unsplash API. (https://api.unsplash.com/). Notoriously inaccurate at classifying bread.',
+        category: 'Picture',
+        usage: client.settings.prefix.concat('bread'),
+        requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -42,13 +49,16 @@ export default class Bread extends Command {
         });
       } else {
         // If the bread picture URL is undefined, log it.
-        Logger.error('Error when returning response for \'bread\' command: undefined URL for image', {
+        Logger.error("Error when returning response for 'bread' command: undefined URL for image", {
           eventType: 'interfaceError',
           interface: 'breadAPI',
           error: 'undefined URL for image',
         });
         // Alert the user.
-        await super.edit(interaction, "I can't find a bread image right now. It's possible I got rate-limited (asked for too many bread pics this month).");
+        await super.edit(
+          interaction,
+          "I can't find a bread image right now. It's possible I got rate-limited (asked for too many bread pics this month)."
+        );
         return;
       }
     } catch (e) {
@@ -71,11 +81,11 @@ export default class Bread extends Command {
    * @private
    */
   private async getBreadPictureURL(): Promise<string> {
-    const breadAPIResponse = await got('https://api.unsplash.com/photos/random?query=bread', {
+    const breadAPIResponse = (await got('https://api.unsplash.com/photos/random?query=bread', {
       headers: {
         Authorization: `Client-ID ${this.client.settings.apiKeys.unsplash}`,
       },
-    }).json() as any;
+    }).json()) as any;
 
     return breadAPIResponse !== undefined ? breadAPIResponse.urls.full : undefined;
   }

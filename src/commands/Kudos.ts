@@ -22,17 +22,21 @@ export default class Kudos extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('kudos')
-      .addUserOption((option) => option.setName('to').setDescription('The user to send a note to.').setRequired(true))
-      .addStringOption((option) => option.setName('for').setDescription('What the note should say.').setRequired(true))
+      .addUserOption(option => option.setName('to').setDescription('The user to send a note to.').setRequired(true))
+      .addStringOption(option => option.setName('for').setDescription('What the note should say.').setRequired(true))
       .setDescription('Sends a thank-you note to someone for you.');
-    super(client, {
-      name: 'kudos',
-      enabled: true,
-      description: 'Sends a thank-you note to someone for you.',
-      category: 'Utility',
-      usage: client.settings.prefix.concat('kudos <user> <message>'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'kudos',
+        enabled: true,
+        description: 'Sends a thank-you note to someone for you.',
+        category: 'Utility',
+        usage: client.settings.prefix.concat('kudos <user> <message>'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -64,7 +68,7 @@ export default class Kudos extends Command {
     // Seems self-centered.
     if (mention.id === interaction.member?.user.id) {
       await super.respond(interaction, {
-        content: 'Sending a Kudos to yourself? I don\'t know, that seems counter-intuitive.',
+        content: "Sending a Kudos to yourself? I don't know, that seems counter-intuitive.",
         ephemeral: true,
       });
       return;

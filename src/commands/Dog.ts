@@ -17,14 +17,18 @@ export default class Dog extends Command {
       .setName('dog')
       .setDescription('Returns a random cute dog picture fetched from the Dog API. (https://dog.ceo/dog-api/)');
 
-    super(client, {
-      name: 'dog',
-      enabled: true,
-      description: 'Returns a random cute dog picture fetched from the Dog API. (https://dog.ceo/dog-api/)',
-      category: 'Picture',
-      usage: client.settings.prefix.concat('dog'),
-      requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'dog',
+        enabled: true,
+        description: 'Returns a random cute dog picture fetched from the Dog API. (https://dog.ceo/dog-api/)',
+        category: 'Picture',
+        usage: client.settings.prefix.concat('dog'),
+        requiredPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+      },
+      definition
+    );
   }
 
   public async run(interaction: CommandInteraction): Promise<void> {
@@ -41,13 +45,16 @@ export default class Dog extends Command {
         });
       } else {
         // If the dog picture URL is undefined, log it.
-        Logger.error('Error when returning response for \'dog\' command: undefined URL for image', {
+        Logger.error("Error when returning response for 'dog' command: undefined URL for image", {
           eventType: 'interfaceError',
           interface: 'dogAPI',
           error: 'undefined URL for image',
         });
         // Alert the user.
-        await super.edit(interaction, "I can't find a dog image right now. This shouldn't happen. Blame my maintainer.");
+        await super.edit(
+          interaction,
+          "I can't find a dog image right now. This shouldn't happen. Blame my maintainer."
+        );
         return;
       }
     } catch (e) {
@@ -70,8 +77,7 @@ export default class Dog extends Command {
    * @private
    */
   private static async getDogPictureURL(): Promise<string> {
-    const dogAPIResponse = await got('https://dog.ceo/api/breeds/image/random', {
-    }).json() as any;
+    const dogAPIResponse = (await got('https://dog.ceo/api/breeds/image/random', {}).json()) as any;
 
     // return "undefined" if absolutely anything happens that is not intended behavior.
     return dogAPIResponse !== undefined ? dogAPIResponse.message : undefined;

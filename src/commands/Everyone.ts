@@ -5,9 +5,7 @@ import stream from 'stream';
 import got from 'got';
 import { v4 as newUUID } from 'uuid';
 import gm from 'gm';
-import {
-  createWriteStream, existsSync, mkdirSync, readFileSync,
-} from 'fs';
+import { createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
 import { promisify } from 'util';
 import Command from '../Command';
 import { BotClient } from '../types';
@@ -52,18 +50,20 @@ export default class Everyone extends Command {
   private pingCount: Map<string, number>;
 
   constructor(client: BotClient) {
-    const definition = new SlashCommandBuilder()
-      .setName('everyone')
-      .setDescription('Ping everyone.');
+    const definition = new SlashCommandBuilder().setName('everyone').setDescription('Ping everyone.');
 
-    super(client, {
-      name: 'everyone',
-      enabled: false,
-      description: 'Ping everyone.',
-      category: 'Jokes',
-      usage: client.settings.prefix.concat('everyone'),
-      requiredPermissions: ['SEND_MESSAGES'],
-    }, definition);
+    super(
+      client,
+      {
+        name: 'everyone',
+        enabled: false,
+        description: 'Ping everyone.',
+        category: 'Jokes',
+        usage: client.settings.prefix.concat('everyone'),
+        requiredPermissions: ['SEND_MESSAGES'],
+      },
+      definition
+    );
 
     this.rateLimit = new Map<string, DateTime>();
     this.pingCount = new Map<string, number>();
@@ -102,7 +102,8 @@ export default class Everyone extends Command {
         // These are ImageMagick primitives, we'll explain one-by-one.
         // First get the fill and stroke set up for the pill itself.
         // Red fill...
-        image = image.fill('#EF4747')
+        image = image
+          .fill('#EF4747')
           // Black stroke...
           .stroke('#000000', 35)
           // Then draw the circle via coordinates
@@ -117,7 +118,8 @@ export default class Everyone extends Command {
       case 2:
         // 2-digit number of pings. Here we need a slightly larger pill,
         // so that needs a round rectangle.
-        image = image.fill('#EF4747')
+        image = image
+          .fill('#EF4747')
           .stroke('#000000', 30)
           // Only extra argument here is roundness of rectangle corners.
           // Let's just set a high number that looks kind of like the
@@ -132,7 +134,8 @@ export default class Everyone extends Command {
       case 3:
         // 3-digit number of pings. SLIGHTLY larger pill, we're going to
         // minimize font size more in this case.
-        image = image.fill('#EF4747')
+        image = image
+          .fill('#EF4747')
           .stroke('#000000', 30)
           .drawRectangle(335, 495, 755, 750, 80)
           .stroke('#FFFFFF', 2)
@@ -144,7 +147,8 @@ export default class Everyone extends Command {
       case 4:
         // 4-digit number of pings. Highest we're gonna go, but we need a
         // bigger pill for this one, too.
-        image = image.fill('#EF4747')
+        image = image
+          .fill('#EF4747')
           .stroke('#000000', 30)
           .drawRectangle(325, 495, 765, 750, 80)
           .stroke('#FFFFFF', 2)
@@ -155,7 +159,8 @@ export default class Everyone extends Command {
 
       default:
         // 9999+ case, basically.
-        image = image.fill('#EF4747')
+        image = image
+          .fill('#EF4747')
           .stroke('#000000', 30)
           .drawRectangle(325, 495, 765, 750, 80)
           .stroke('#FFFFFF', 2)
@@ -167,7 +172,7 @@ export default class Everyone extends Command {
 
     // Resize and write the image. We need to wrap the callback with a Promise, though.
     return new Promise((resolve, reject) => {
-      image.write(`guild_pics/${guild}_ping.png`, (err) => {
+      image.write(`guild_pics/${guild}_ping.png`, err => {
         if (err) {
           reject(new Error(`Could not write image with ping on it: ${err}`));
         }
@@ -197,7 +202,9 @@ export default class Everyone extends Command {
       // now - lastCall = ...
       const { minutes } = now.diff(lastCall, ['minutes']).toObject();
       if (minutes !== undefined && minutes < 5) {
-        await super.edit(interaction, { content: `That's kinda fast, maybe do it <t:${Math.trunc(lastCall.plus({ minutes: 5 }).toSeconds())}:R>` });
+        await super.edit(interaction, {
+          content: `That's kinda fast, maybe do it <t:${Math.trunc(lastCall.plus({ minutes: 5 }).toSeconds())}:R>`,
+        });
         return;
       }
     }
@@ -227,17 +234,14 @@ export default class Everyone extends Command {
       }
 
       // Get the guild icon, save it.
-      await pipeline(
-        got.stream(iconURL),
-        createWriteStream(`guild_pics/${currentGuildID}.png`),
-      );
+      await pipeline(got.stream(iconURL), createWriteStream(`guild_pics/${currentGuildID}.png`));
 
       // We'll also want to resize the icon once we're done,
       // since our future ImageMagick finagling won't work without it.
       const saveFilePromise: Promise<void> = new Promise((resolve, reject) => {
         ImageMagick(`guild_pics/${currentGuildID}.png`)
           .resize(800, 800)
-          .write(`guild_pics/${currentGuildID}.png`, async (err) => {
+          .write(`guild_pics/${currentGuildID}.png`, async err => {
             if (err) {
               const uuid = newUUID();
               Logger.error('Could not save resized guild icon!', {

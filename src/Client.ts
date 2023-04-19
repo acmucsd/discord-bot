@@ -1,7 +1,7 @@
 import { Collection, Client as DiscordClient } from 'discord.js';
 import { Service } from 'typedi';
 import Logger from './utils/Logger';
-import { BotSettings, BotClient } from './types';
+import { BotSettings, BotClient, BotInitializationError } from './types';
 import Command from './Command';
 import ActionManager from './managers/ActionManager';
 import configuration from './config/config';
@@ -42,40 +42,48 @@ export default class Client extends DiscordClient implements BotClient {
    * @param portalAPIManager A PortalAPIManager class to run. Injected by TypeDI
    */
   constructor(private actionManager: ActionManager, private portalAPIManager: PortalAPIManager) {
-    super(configuration.clientOptions || {
-      intents: [
-        'GUILDS',
-        'GUILD_INTEGRATIONS',
-        'GUILD_WEBHOOKS',
-        'GUILD_MESSAGES',
-        'DIRECT_MESSAGES',
-        'GUILD_MESSAGE_REACTIONS',
-        'DIRECT_MESSAGE_REACTIONS',
-      ],
-    });
+    super(
+      configuration.clientOptions || {
+        intents: [
+          'GUILDS',
+          'GUILD_INTEGRATIONS',
+          'GUILD_WEBHOOKS',
+          'GUILD_MESSAGES',
+          'DIRECT_MESSAGES',
+          'GUILD_MESSAGE_REACTIONS',
+          'DIRECT_MESSAGE_REACTIONS',
+        ],
+      }
+    );
     this.settings = configuration;
     // We absolutely need some envvars, so if they're not in our .env file, nuke the initialization.
     // We can throw Errors here to nuke the bot, since we don't have any catches higher up.
     if (!process.env.BOT_TOKEN) {
-      Logger.error('Could not construct Client class: missing bot token in envvars', {
-        eventType: 'initError',
-        error: 'missing bot token in envvars',
-      });
-      throw new Error('Could not construct Client class: missing bot token in envvars');
+      throw new BotInitializationError('Bot Token');
     }
     if (!process.env.BOT_PREFIX) {
-      Logger.error('Could not construct Client class: missing bot prefix in envvars', {
-        eventType: 'initError',
-        error: 'missing bot prefix in envvars',
-      });
-      throw new Error('Could not construct Client class: missing bot prefix in envvars');
+      throw new BotInitializationError('Bot Prefix');
     }
     if (!process.env.CLIENT_ID) {
-      Logger.error('Could not construct Client class: missing app client ID in envvars', {
-        eventType: 'initError',
-        error: 'missing app client ID in envvars',
-      });
-      throw new Error('Could not construct Client class: missing app client ID in envvars');
+      throw new BotInitializationError('App Client ID');
+    }
+    if (!process.env.ACMURL_USERNAME) {
+      throw new BotInitializationError('ACMURL Username');
+    }
+    if (!process.env.ACMURL_PASSWORD) {
+      throw new BotInitializationError('ACMURL Password');
+    }
+    if (!process.env.MEMBERSHIP_PORTAL_API_URL) {
+      throw new BotInitializationError('Membership Portal API URL');
+    }
+    if (!process.env.MEMBERSHIP_PORTAL_API_USERNAME) {
+      throw new BotInitializationError('Membership Portal API Username');
+    }
+    if (!process.env.MEMBERSHIP_PORTAL_API_PASSWORD) {
+      throw new BotInitializationError('Membership Portal API Password');
+    }
+    if (!process.env.DISCORD_GUILD_IDS) {
+      throw new BotInitializationError('Discord Guild ID List');
     }
     this.settings.clientID = process.env.CLIENT_ID;
     this.settings.token = process.env.BOT_TOKEN;
@@ -83,39 +91,12 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.maintainerID = process.env.MAINTAINER_USER_ID;
     this.settings.apiKeys.catAPI = process.env.CAT_API_KEY;
     this.settings.apiKeys.unsplash = process.env.UNSPLASH_ACCESS_KEY;
-
-    if (!process.env.ACMURL_USERNAME) {
-      Logger.error('Could not construct Client class: missing ACMURL username in envvars', {
-        eventType: 'initError',
-        error: 'missing ACMURL username in envvars',
-      });
-      throw new Error('Could not construct Client class: missing ACMURL username in envvars');
-    }
-    if (!process.env.ACMURL_PASSWORD) {
-      Logger.error('Could not construct Client class: missing ACMURL password in envvars', {
-        eventType: 'initError',
-        error: 'missing ACMURL password in envvars',
-      });
-      throw new Error('Could not construct Client class: missing ACMURL password in envvars');
-    }
-    if (!process.env.MEMBERSHIP_PORTAL_API_USERNAME) {
-      Logger.error('Could not construct Client class: missing Membership Portal API username in envvars', {
-        eventType: 'initError',
-        error: 'missing Membership Portal API username in envvars',
-      });
-      throw new Error('Could not construct Client class: missing Membership Portal API username in envvars');
-    }
-    if (!process.env.MEMBERSHIP_PORTAL_API_PASSWORD) {
-      Logger.error('Could not construct Client class: missing Membership Portal API password in envvars', {
-        eventType: 'initError',
-        error: 'missing Membership Portal API password in envvars',
-      });
-      throw new Error('Could not construct Client class: missing Membership Portal API password in envvars');
-    }
     this.settings.acmurl.username = process.env.ACMURL_USERNAME;
     this.settings.acmurl.password = process.env.ACMURL_PASSWORD;
+    this.settings.portalAPI.url = process.env.MEMBERSHIP_PORTAL_API_URL;
     this.settings.portalAPI.username = process.env.MEMBERSHIP_PORTAL_API_USERNAME;
     this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
+    this.settings.discordGuildIDs = JSON.parse(process.env.DISCORD_GUILD_IDS) as Array<string>;
     this.initialize().then();
   }
 
