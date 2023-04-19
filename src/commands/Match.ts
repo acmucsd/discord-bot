@@ -66,30 +66,34 @@ export default class Match extends Command {
           const shuffledMembersList = Match.shuffle(memberList);
           const memberPairings = [];
 
-          while (shuffledMembersList.length > 1) {
-            // If there's an odd number of members, we'll have a group of 3.
-            const pairedMembers = [];
-            pairedMembers.push(shuffledMembersList.pop(), shuffledMembersList.pop());
-            if (shuffledMembersList.length === 1) {
-              pairedMembers.push(shuffledMembersList.pop());
+          while (shuffledMembersList.length > 0) {
+            let pairedMembers: GuildMember[];
+            if (shuffledMembersList.length % 2 === 1) {
+              // If there's an odd number of people, we start with a group of 3 to correct it.
+              pairedMembers = shuffledMembersList.splice(0, 3);
+            } else {
+              pairedMembers = shuffledMembersList.splice(0, 2);
             }
             memberPairings.push(pairedMembers);
             interaction.channel?.send(JSON.stringify(pairedMembers.map(a => a?.toString())));
           }
 
           memberPairings.forEach(async group => {
+            const groupAsString = group.map(member => member.toString()).join(', ');
+            const memberTagsAsString = group.map(member => member.displayName).join(', ');
             const channel = interaction.channel as TextChannel;
             const thread = await channel.threads.create({
-              name: 'donuts',
-              autoArchiveDuration: 60,
+              name: `donuts - ${memberTagsAsString}`,
+              autoArchiveDuration: 10080, // The thread will last 1 week without inactivity before disappearing.
               type: 'GUILD_PRIVATE_THREAD',
               reason: 'we need donuts',
             });
             group.forEach(member => {
-              if (member) {
-                thread.members.add(member);
-              }
+              thread.members.add(member);
             });
+            thread.send(
+              `# :wave: Hello ${groupAsString} – time to meet up for donuts!\nI'm here to help you get to know your teammates by pairing everyone up every week.\nWhy don't you all pick a time to meet and hang out?`
+            );
           });
         }
       }
