@@ -99,10 +99,10 @@ export default class Match extends Command {
             const memberTagsAsString = group.map(member => member.displayName).join(', ');
             const channel = interaction.channel as TextChannel;
             const thread = await channel.threads.create({
-              name: `donuts - ${memberTagsAsString}`,
+              name: `Donuts - ${memberTagsAsString}`,
               autoArchiveDuration: 10080, // The thread will last 1 week without inactivity before disappearing.
               type: 'GUILD_PRIVATE_THREAD',
-              reason: 'we need donuts',
+              reason: `Donuts matching for ${memberTagsAsString}`,
             });
             group.forEach(member => {
               thread.members.add(member);
