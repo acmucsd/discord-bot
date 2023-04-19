@@ -41,14 +41,14 @@ export default class QR extends Command {
 
   /**
    * Generates and returns a QR code given the data, title, and subtitle.
-   * 
+   *
    * @param data The content to put in the QR code.
    * @param title event name
    * @param subtitle event description
    * @returns newly generated QR code
    */
   public static generateQR(data: string, title: string, subtitle: string): QRCode {
-    return new QRCode ({
+    return new QRCode({
       text: data,
       colorDark: '#000000',
       colorLight: 'rgba(0,0,0,0)',
@@ -75,7 +75,6 @@ export default class QR extends Command {
     // Get all the arguments.
     const content = interaction.options.getString('content', true);
     const titleArgument = interaction.options.getString('title');
-    const customTitle = titleArgument !== null;
 
     // Defer the reply so we can have time to make the QR code.
     await super.defer(interaction);
@@ -84,7 +83,7 @@ export default class QR extends Command {
     //
     // See Checkin.ts on how QR code arguments work.
     //
-    const qrCode = QR.generateQR(content, titleArgument || content, "");
+    const qrCode = QR.generateQR(content, titleArgument || content, '');
 
     // Make the Discord attachment for the QR code.
     const qrCodeDataUrl = await qrCode.toDataURL();
