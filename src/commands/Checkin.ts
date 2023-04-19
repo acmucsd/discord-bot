@@ -193,15 +193,14 @@ export default class Checkin extends Command {
    * @returns URL of the generated QR code.
    */
   private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL, needsSlide: boolean) {
-    // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
-    const eventQrCode = QR.generateQR(expressCheckinURL.toString(), "", "");
-
     // Doesn't need landscape QR slide. Return the QR code by itself
     let qrCodeDataUrl;
     if(needsSlide) {
+      const eventQrCode = QR.generateQR(expressCheckinURL.toString(), "", "");
       qrCodeDataUrl = await this.createQRSlide(event, eventQrCode);
       console.log("NEEDS A SLIDE!");
     } else {
+      const eventQrCode = QR.generateQR(expressCheckinURL.toString(), event.title, `Check-in code: ${event.attendanceCode}`);
       qrCodeDataUrl = await eventQrCode.toDataURL();
       console.log("DOES NOT NEED A SLIDE!");
     }
