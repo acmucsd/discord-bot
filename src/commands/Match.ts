@@ -166,7 +166,7 @@ export default class Match extends Command {
     let confirmationMessage = `Are you sure you want to run this command? This will ping **${usersToBeMatched.length}** users on your server.`;
     // We add this section if the command was run previously so users are aware if the command has already been run.
     if (this.lastRun) {
-      confirmationMessage += ` Matches were last generated on <t:${Math.trunc(this.lastRun.toSeconds())}:F>`;
+      confirmationMessage += ` Matches were last generated <t:${Math.trunc(this.lastRun.toSeconds())}:R>`;
     }
     const message = (await interaction.editReply({
       content: confirmationMessage,
