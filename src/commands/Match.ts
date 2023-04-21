@@ -135,7 +135,7 @@ export default class Match extends Command {
         thread.members.add(member);
       });
       await thread.send(
-        `# :wave: Hello ${groupAsString} – time to meet up for donuts!\nI'm here to help you get to know your teammates by pairing everyone up every week.\nWhy don't you all pick a time to meet and hang out?`
+        `# :wave: Hello ${groupAsString} – time to meet up for donuts!\nI'm here to help you get to know your teammates by pairing everyone up every week. Why don't you all pick a time to meet and hang out?`
       );
       // Wait 200 ms before executing the next set of memberPairings.
       await setTimeout(() => {}, 200);
