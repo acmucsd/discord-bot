@@ -49,6 +49,7 @@ export default class Client extends DiscordClient implements BotClient {
           'GUILD_INTEGRATIONS',
           'GUILD_WEBHOOKS',
           'GUILD_MESSAGES',
+          'GUILD_MEMBERS',
           'DIRECT_MESSAGES',
           'GUILD_MESSAGE_REACTIONS',
           'DIRECT_MESSAGE_REACTIONS',
@@ -85,6 +86,9 @@ export default class Client extends DiscordClient implements BotClient {
     if (!process.env.DISCORD_GUILD_IDS) {
       throw new BotInitializationError('Discord Guild ID List');
     }
+    if (!process.env.MATCH_ROLE_ID) {
+      throw new BotInitializationError('Match Role ID');
+    }
     this.settings.clientID = process.env.CLIENT_ID;
     this.settings.token = process.env.BOT_TOKEN;
     this.settings.prefix = process.env.BOT_PREFIX;
@@ -97,6 +101,7 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.portalAPI.username = process.env.MEMBERSHIP_PORTAL_API_USERNAME;
     this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
     this.settings.discordGuildIDs = JSON.parse(process.env.DISCORD_GUILD_IDS) as Array<string>;
+    this.settings.matchRoleID = process.env.MATCH_ROLE_ID;
     this.initialize().then();
   }
 

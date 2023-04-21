@@ -13,6 +13,7 @@ export default {
       'GUILD_INTEGRATIONS',
       'GUILD_WEBHOOKS',
       'GUILD_MESSAGES',
+      'GUILD_MEMBERS',
       'DIRECT_MESSAGES',
       'GUILD_MESSAGE_REACTIONS',
       'DIRECT_MESSAGE_REACTIONS',
@@ -39,4 +40,5 @@ export default {
     events: 'src/events',
   },
   discordGuildIDs: [],
+  matchRoleID: '',
 } as BotSettings;
