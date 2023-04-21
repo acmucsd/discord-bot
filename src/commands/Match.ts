@@ -73,9 +73,11 @@ export default class Match extends Command {
    * @returns A list of server users who have the specified 'match' role.
    */
   private async getRoleUsers(interaction: CommandInteraction): Promise<GuildMember[]> {
+    // Not all members will be stored in the role cache initially, so fetching
+    // all guild members in the server will populate them in the role cache for our use.
+    await interaction.guild?.members.fetch();
     // This is a collection mapping role IDs to Role objects.
     const roleMap = await interaction.guild?.roles.fetch();
-    await interaction.guild?.members.fetch();
     if (roleMap) {
       // We get the role that we want to use when picking members to match.
       const role = await roleMap.get(this.client.settings.matchRoleID);
