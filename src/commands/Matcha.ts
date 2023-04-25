@@ -16,26 +16,26 @@ import { BotClient } from '../types';
  * Matches together users with a special role in groups of 2 or 3 in a Guild private thread.
  * This allows members to meet each other one-to-one and helps increase member engagement.
  */
-export default class Match extends Command {
+export default class Matcha extends Command {
   // Variable storing what time the command was last run. If null, then it hasn't been run yet.
   private lastRun: DateTime | null;
 
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
-      .setName('match')
+      .setName('matcha')
       .setDescription(
-        'Triggers matching for donuts! Threads will be created in the channel where this command is called.'
+        'Triggers matching for Matcha! Threads will be created in the channel where this command is called.'
       );
 
     super(
       client,
       {
-        name: 'match',
+        name: 'matcha',
         enabled: true,
         description:
-          'Triggers matching for donuts! Threads will be created in the channel where this command is called.',
+          'Triggers matching for Matcha! Threads will be created in the channel where this command is called.',
         category: 'Information',
-        usage: client.settings.prefix.concat('match'),
+        usage: client.settings.prefix.concat('matcha'),
         requiredPermissions: ['SEND_MESSAGES'],
       },
       definition
@@ -69,7 +69,7 @@ export default class Match extends Command {
 
   /**
    * Gets all users with the given role in the current discord server where this command was called.
-   * @param interaction The original CommandInteraction from calling the /match command.
+   * @param interaction The original CommandInteraction from calling the /matcha command.
    * @returns A list of server users who have the specified 'match' role.
    */
   private async getRoleUsers(interaction: CommandInteraction): Promise<GuildMember[]> {
@@ -93,14 +93,14 @@ export default class Match extends Command {
   /**
    * Given a list of users, createMatches creates private Guild Threads in the channel the command was called,
    * matches 2-3 users in each thread, and sends a brief introduction so they can meet up.
-   * @param interaction The original CommandInteraction from calling the /match command.
+   * @param interaction The original CommandInteraction from calling the /matcha command.
    * @param users The users to create matches from.
    * @returns The total number of users who were matched.
    */
   private static async createMatches(interaction: CommandInteraction, users: GuildMember[]): Promise<Number> {
     const numMembersMatched = users.length;
     // Now, we make the pairings for Donuts members.
-    const shuffledMembersList = Match.shuffle(users);
+    const shuffledMembersList = Matcha.shuffle(users);
     const memberPairings = [];
 
     while (shuffledMembersList.length > 0) {
@@ -126,16 +126,16 @@ export default class Match extends Command {
       const memberTagsAsString = group.map(member => member.displayName).join(', ');
       const channel = interaction.channel as TextChannel;
       const thread = await channel.threads.create({
-        name: `Donuts - ${memberTagsAsString}`,
+        name: `Matcha - ${memberTagsAsString}`,
         autoArchiveDuration: 10080, // The thread will last 1 week without inactivity before disappearing.
         type: 'GUILD_PRIVATE_THREAD',
-        reason: `Donuts matching for ${memberTagsAsString}`,
+        reason: `Matcha matching for ${memberTagsAsString}`,
       });
       group.forEach(member => {
         thread.members.add(member);
       });
       await thread.send(
-        `# :wave: Hello ${groupAsString} – time to meet up for donuts!\nI'm here to help you get to know your teammates by pairing everyone up every week. Why don't you all pick a time to meet and hang out?`
+        `# 👋 Hello ${groupAsString} – time to meet up ‼️\nI'm here to help you :face_holding_back_tears: :index_pointing_at_the_viewer: get to know your teammates 🤩 by pairing everyone up every week 📆. Why don't you all pick a time ⏰ to meet up and get 🍵 🍣 🧋?`
       );
       // Wait 200 ms before executing the next set of memberPairings.
       await setTimeout(() => {}, 200);
@@ -179,7 +179,7 @@ export default class Match extends Command {
       .then(async buttonInteraction => {
         // buttonInteraction is the interaction associated with pressing the button.
         if (buttonInteraction.customId === 'Cancel') {
-          await super.edit(interaction, { content: '/match was canceled!', components: [] });
+          await super.edit(interaction, { content: '/matcha was canceled!', components: [] });
           return;
         }
         // Otherwise, the 'Confirm' button was called.
@@ -188,15 +188,15 @@ export default class Match extends Command {
         await buttonInteraction.editReply({ content: 'Matching members!' });
         // Remove the button so they can't press it again.
         await super.edit(interaction, { components: [] });
-        const numMembersMatched = await Match.createMatches(interaction, usersToBeMatched);
+        const numMembersMatched = await Matcha.createMatches(interaction, usersToBeMatched);
         await buttonInteraction.editReply({
-          content: `**/match** was called by ${interaction.user}: **${numMembersMatched}** members were successfully matched!`,
+          content: `**/matcha** was called by ${interaction.user}: **${numMembersMatched}** members were successfully matched!`,
         });
       })
       .catch(async () => {
         // This occurs when the max timeout on awaitMessageComponent is hit.
         // We now remove the button so it can't be pressed.
-        await super.edit(interaction, { content: 'The call to /match expired!', components: [] });
+        await super.edit(interaction, { content: 'The call to /matcha expired!', components: [] });
       });
   }
 }
