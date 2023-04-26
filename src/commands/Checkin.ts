@@ -3,7 +3,6 @@ import got from 'got';
 import { DateTime, Interval } from 'luxon';
 import { v4 as newUUID } from 'uuid';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import QRCode from 'easyqrcodejs-nodejs';
 import { createCanvas, loadImage } from 'canvas';
 import { BotClient, InteractionPayload, PortalEvent, UUIDv4 } from '../types';
 import Command from '../Command';
