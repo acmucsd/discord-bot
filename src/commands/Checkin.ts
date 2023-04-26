@@ -209,13 +209,19 @@ export default class Checkin extends Command {
         event.title,
         `Check-in code: ${event.attendanceCode}`
       );
-      qrCodeDataUrl = await eventQrCode.toDataURL();
+      qrCodeDataUrl = await eventQrCode;
     }
 
     return qrCodeDataUrl;
   }
 
-  private static async createQRSlide(event: PortalEvent, eventQrCode: QRCode) {
+  /**
+   * Creates a slide with the given QR Code and returns its URL.
+   * @param event Portal Event to create the slide for.
+   * @param eventQrCode QR Code for the event.
+   * @returns URL of the generated slide.
+   */
+  private static async createQRSlide(event: PortalEvent, eventQrCode: string) {
     // Creating slide with Canvas
     // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
     const slide = createCanvas(1920, 1080);
@@ -230,7 +236,7 @@ export default class Checkin extends Command {
     // draw QR code
     const angleInRadians = Math.PI / 4;
     context.rotate(angleInRadians);
-    const qrImg = await loadImage(await eventQrCode.toDataURL());
+    const qrImg = await loadImage(await eventQrCode);
     context.drawImage(qrImg, 400, -300, 550, 550);
     context.rotate(-1 * angleInRadians);
 

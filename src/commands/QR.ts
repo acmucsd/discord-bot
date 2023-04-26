@@ -40,14 +40,14 @@ export default class QR extends Command {
   }
 
   /**
-   * Generates and returns a QR code given the data, title, and subtitle.
+   * Generates and returns the url of a QR code given the data, title, and subtitle.
    *
    * @param data The content to put in the QR code.
    * @param title event name
    * @param subtitle event description
-   * @returns newly generated QR code
+   * @returns newly generated QR code url
    */
-  public static generateQR(data: string, title: string, subtitle: string): QRCode {
+  public static generateQR(data: string, title: string, subtitle: string): string {
     return new QRCode({
       text: data,
       colorDark: '#000000',
@@ -62,7 +62,7 @@ export default class QR extends Command {
       titleBackgroundColor: 'transparent',
       subTitle: subtitle,
       subTitleTop: -5,
-    });
+    }).toDataURL();
   }
 
   /**
@@ -86,7 +86,7 @@ export default class QR extends Command {
     const qrCode = QR.generateQR(content, titleArgument || content, '');
 
     // Make the Discord attachment for the QR code.
-    const qrCodeDataUrl = await qrCode.toDataURL();
+    const qrCodeDataUrl = await qrCode;
     const qrCodeBuffer: Buffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
     const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, 'qr.png');
 
