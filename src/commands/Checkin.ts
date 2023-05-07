@@ -225,45 +225,49 @@ export default class Checkin extends Command {
     // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
     const slide = createCanvas(1920, 1080);
     const context = slide.getContext('2d');
-    context.fillStyle = '#ffffff';
+    // context.fillStyle = '#ffffff';
     context.fillRect(0, 0, 1920, 1080);
 
     // draw background
-    const background = await loadImage('./src/assets/acm-background.png');
+    const background = await loadImage('./src/assets/qr-slide-background.png');
     context.drawImage(background, 0, 0, 1920, 1080);
 
     // draw QR code
     const angleInRadians = Math.PI / 4;
     context.rotate(angleInRadians);
     const qrImg = await loadImage(await eventQrCode);
-    context.drawImage(qrImg, 400, -300, 550, 550);
+    context.drawImage(qrImg, 375, -325, 600, 600);
     context.rotate(-1 * angleInRadians);
 
     // members.acmucsd.com
-    context.textAlign = 'center';
-    context.font = "40pt 'DM Sans'";
-    context.fillStyle = '#727272EB';
-    context.fillText('members.acmucsd.com', 1550, 1000);
+    // context.textAlign = 'center';
+    // context.font = "40pt 'DM Sans'";
+    // context.fillStyle = '#727272EB';
+    // context.fillText('members.acmucsd.com', 1550, 1000);
 
     // for
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(1000, 400);
-    context.lineTo(1325, 400);
-    context.stroke();
-    context.font = "45pt 'DM Sans'";
-    context.fillStyle = '#000';
-    context.fillText('for', 1400, 415);
-    context.beginPath();
-    context.moveTo(1475, 400);
-    context.lineTo(1800, 400);
-    context.stroke();
+    // context.lineWidth = 5;
+    // context.beginPath();
+    // context.moveTo(1000, 400);
+    // context.lineTo(1325, 400);
+    // context.stroke();
+    // context.font = "45pt 'DM Sans'";
+    // context.fillStyle = '#000';
+    // context.fillText('for', 1400, 415);
+    // context.beginPath();
+    // context.moveTo(1475, 400);
+    // context.lineTo(1800, 400);
+    // context.stroke();
 
     // event title
-    let titleSize = Math.max(Math.min(event.title.length, 70), 8);
+    let title = event.title;
+    // let title = "123456789012345678901234567...";
+    // let title = "This is 27 Letters Idk Idk?...";
+    let titleSize = Math.max(Math.min(title.length, 70), 8);
     titleSize = (-2 * titleSize) / 3 + 65;
+    context.textAlign = 'center';
     context.font = `bold ${titleSize}pt 'DM Sans'`;
-    context.fillText(event.title, 1400, 520);
+    context.fillText(title, 1400, 550);
 
     // everything starting here has a shadow
     context.shadowColor = '#00000040';
@@ -271,23 +275,24 @@ export default class Checkin extends Command {
 
     // write ACM at UCSD
     context.shadowOffsetY = 3.61;
-    context.font = "bold 80pt 'DM Sans'";
-    context.textAlign = 'right';
-    context.fillText('ACM', 400, 975);
-    context.font = "80pt 'DM Sans'";
-    context.textAlign = 'left';
-    context.fillText(' at UCSD', 400, 975);
+    // context.font = "bold 80pt 'DM Sans'";
+    // context.textAlign = 'right';
+    // context.fillText('ACM', 400, 975);
+    // context.font = "80pt 'DM Sans'";
+    // context.textAlign = 'left';
+    // context.fillText(' at UCSD', 400, 975);
 
     // Check-in Code
-    context.shadowOffsetY = 4.41;
-    context.font = "70pt 'DM Sans'";
-    context.textAlign = 'center';
-    context.fillText('Check-in Code', 1400, 320);
+    // context.shadowOffsetY = 4.41;
+    // context.font = "70pt 'DM Sans'";
+    // context.textAlign = 'center';
+    // context.fillText('Check-in Code', 1400, 320);
 
     // code
     const checkinCode = event.attendanceCode;
     let checkinSize = Math.max(Math.min(checkinCode.length, 70), 30);
     checkinSize = (-2 * checkinSize) / 3 + 65;
+    context.fillStyle = '#ffffff';
     context.font = `bold ${checkinSize}pt 'DM Sans'`;
     const textMetrics = context.measureText(checkinCode);
     let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
@@ -296,12 +301,12 @@ export default class Checkin extends Command {
     context.fillStyle = '#70BAFF';
     context.beginPath();
     // roundRect parameters: x, y, width, height, radius
-    context.roundRect(1400 - codeWidth / 2, 600, codeWidth, 136, 20);
+    context.roundRect(1400 - codeWidth / 2, 620, codeWidth, 136, 20);
     context.fill();
     context.shadowOffsetY = 6.62;
     context.font = `bold ${checkinSize}pt 'DM Sans'`;
     context.fillStyle = '#fff';
-    context.fillText(checkinCode, 1400, 688);
+    context.fillText(checkinCode, 1400, 710);
 
     // Get the Data URL of the image (base-64 encoded string of image).
     // Easier to attach than saving files.
