@@ -260,7 +260,7 @@ export default class Checkin extends Command {
     // context.stroke();
 
     // event title
-    let title = event.title;
+    const { title } = event;
     // let title = "123456789012345678901234567...";
     // let title = "This is 27 Letters Idk Idk?...";
     let titleSize = Math.max(Math.min(title.length, 70), 8);
