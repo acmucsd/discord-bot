@@ -242,14 +242,13 @@ export default class Checkin extends Command {
     // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
     const slide = createCanvas(1920, 1080);
     const context = slide.getContext('2d');
-    // context.fillStyle = '#ffffff';
     context.fillRect(0, 0, 1920, 1080);
 
-    // draw background
+    // Draw background
     const background = await loadImage('./src/assets/qr-slide-background.png');
     context.drawImage(background, 0, 0, 1920, 1080);
 
-    // draw QR code
+    // Draw QR code
     // Tilting the slide 45 degrees before adding QR code
     const angleInRadians = Math.PI / 4;
     context.rotate(angleInRadians);
@@ -257,66 +256,27 @@ export default class Checkin extends Command {
     context.drawImage(qrImg, 375, -325, 600, 600);
     context.rotate(-1 * angleInRadians);
 
-    // members.acmucsd.com
-    // context.textAlign = 'center';
-    // context.font = "40pt 'DM Sans'";
-    // context.fillStyle = '#727272EB';
-    // context.fillText('members.acmucsd.com', 1550, 1000);
-
-    // for
-    // context.lineWidth = 5;
-    // context.beginPath();
-    // context.moveTo(1000, 400);
-    // context.lineTo(1325, 400);
-    // context.stroke();
-    // context.font = "45pt 'DM Sans'";
-    // context.fillStyle = '#000';
-    // context.fillText('for', 1400, 415);
-    // context.beginPath();
-    // context.moveTo(1475, 400);
-    // context.lineTo(1800, 400);
-    // context.stroke();
-
-    // event title
+    // Event title
     const title =
       event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
-    // const test = "this is definitely more than 27 characters long blah blah blah blah blah blah";
-    // const title =
-    //   test.substring(0, 27) === test ? test : test.substring(0, 27).concat('...');
-
     const titleSize = rescaleFont(title.length, 8, 70);
     context.textAlign = 'center';
     context.font = `bold ${titleSize}pt 'DM Sans'`;
     context.fillText(title, 1400, 550);
 
-    // everything starting here has a shadow
+    // Everything starting here has a shadow
     context.shadowColor = '#00000040';
     context.shadowBlur = 5;
-
-    // write ACM at UCSD
     context.shadowOffsetY = 3.61;
-    // context.font = "bold 80pt 'DM Sans'";
-    // context.textAlign = 'right';
-    // context.fillText('ACM', 400, 975);
-    // context.font = "80pt 'DM Sans'";
-    // context.textAlign = 'left';
-    // context.fillText(' at UCSD', 400, 975);
 
-    // Check-in Code
-    // context.shadowOffsetY = 4.41;
-    // context.font = "70pt 'DM Sans'";
-    // context.textAlign = 'center';
-    // context.fillText('Check-in Code', 1400, 320);
-
-    // code
+    // Code
     const checkinCode = event.attendanceCode;
-    // const checkinCode = "computationallinguisticsyea";
     const checkinSize = rescaleFont(checkinCode.length, 30, 70);
     context.fillStyle = '#ffffff';
     context.font = `bold ${checkinSize}pt 'DM Sans'`;
     const textMetrics = context.measureText(checkinCode);
     let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
-    // add 120 for padding on left and right side
+    // Add 120 for padding on left and right side
     codeWidth += 120;
     context.fillStyle = '#70BAFF';
     context.beginPath();
