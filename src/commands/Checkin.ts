@@ -278,10 +278,12 @@ export default class Checkin extends Command {
     // context.stroke();
 
     // event title
-    const { title } = event;
-    // const title = "this is a really long event title idk";
-    // let title = "This is 27 Letters Idk Idk?...";
-
+    const title =
+      event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
+    // const test = "this is definitely more than 27 characters long blah blah blah blah blah blah";
+    // const title =
+    //   test.substring(0, 27) === test ? test : test.substring(0, 27).concat('...');
+    
     const titleSize = rescaleFont(title.length, 8, 70);
     context.textAlign = 'center';
     context.font = `bold ${titleSize}pt 'DM Sans'`;
