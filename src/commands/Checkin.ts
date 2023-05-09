@@ -283,7 +283,7 @@ export default class Checkin extends Command {
     // const test = "this is definitely more than 27 characters long blah blah blah blah blah blah";
     // const title =
     //   test.substring(0, 27) === test ? test : test.substring(0, 27).concat('...');
-    
+
     const titleSize = rescaleFont(title.length, 8, 70);
     context.textAlign = 'center';
     context.font = `bold ${titleSize}pt 'DM Sans'`;
