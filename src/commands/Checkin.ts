@@ -221,6 +221,23 @@ export default class Checkin extends Command {
    * @returns URL of the generated slide.
    */
   private static async createQRSlide(event: PortalEvent, eventQrCode: string) {
+    /**
+     * Rescales the font; makes the font size smaller if the text is longer
+     * and bigger if the text is shorter.
+     * @param size Original font size before rescaling
+     */
+    const rescaleFont = (size: number, min: number, max: number) => {
+      // We want to limit how small or how big the font can get
+      let rescaledSize = size;
+      if (size > max) {
+        rescaledSize = max;
+      }
+      if (size < min) {
+        rescaledSize = min;
+      }
+      return (-2 * rescaledSize) / 3 + 65;
+    };
+
     // Creating slide with Canvas
     // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
     const slide = createCanvas(1920, 1080);
@@ -233,6 +250,7 @@ export default class Checkin extends Command {
     context.drawImage(background, 0, 0, 1920, 1080);
 
     // draw QR code
+    // Tilting the slide 45 degrees before adding QR code
     const angleInRadians = Math.PI / 4;
     context.rotate(angleInRadians);
     const qrImg = await loadImage(await eventQrCode);
@@ -261,10 +279,10 @@ export default class Checkin extends Command {
 
     // event title
     const { title } = event;
-    // let title = "123456789012345678901234567...";
+    // const title = "this is a really long event title idk";
     // let title = "This is 27 Letters Idk Idk?...";
-    let titleSize = Math.max(Math.min(title.length, 70), 8);
-    titleSize = (-2 * titleSize) / 3 + 65;
+
+    const titleSize = rescaleFont(title.length, 8, 70);
     context.textAlign = 'center';
     context.font = `bold ${titleSize}pt 'DM Sans'`;
     context.fillText(title, 1400, 550);
@@ -290,8 +308,8 @@ export default class Checkin extends Command {
 
     // code
     const checkinCode = event.attendanceCode;
-    let checkinSize = Math.max(Math.min(checkinCode.length, 70), 30);
-    checkinSize = (-2 * checkinSize) / 3 + 65;
+    // const checkinCode = "computationallinguisticsyea";
+    const checkinSize = rescaleFont(checkinCode.length, 30, 70);
     context.fillStyle = '#ffffff';
     context.font = `bold ${checkinSize}pt 'DM Sans'`;
     const textMetrics = context.measureText(checkinCode);
