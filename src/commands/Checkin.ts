@@ -3,15 +3,18 @@ import got from 'got';
 import { DateTime, Interval } from 'luxon';
 import { v4 as newUUID } from 'uuid';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import QRCode from 'easyqrcodejs-nodejs';
+import { createCanvas, loadImage } from 'canvas';
 import { BotClient, InteractionPayload, PortalEvent, UUIDv4 } from '../types';
 import Command from '../Command';
 import Logger from '../utils/Logger';
+import QR from './QR';
 
 /**
  * This Command DM's the caller the checkin code and Express Checkin link for any events
  * in today's timeframe. Optional argument `now` makes the embed with the checkin codes
  * be returned in the same chat as the Command message, but only for currently running events.
+ * Argument 'widescreen' allows users to choose if they want a QR code by itself (false) or
+ * the widescreen slide QR (true).
  */
 export default class Checkin extends Command {
   constructor(client: BotClient) {
@@ -24,10 +27,7 @@ export default class Checkin extends Command {
           .setRequired(false)
       )
       .addBooleanOption(option =>
-        option
-          .setName('qr')
-          .setDescription('If possible, include a QR code for Express Check-In in embed.')
-          .setRequired(false)
+        option.setName('widescreen').setDescription('Include a slide for the QR code.').setRequired(false)
       )
       .setDescription(
         "Sends a DM or embed with all check-in codes from today's events. Includes Express Checkin QR code!"
@@ -67,11 +67,11 @@ export default class Checkin extends Command {
   public async run(interaction: CommandInteraction): Promise<void> {
     // Get arguments. Get rid of the null types by checking them.
     const nowArgument = interaction.options.getBoolean('now');
-    const qrArgument = interaction.options.getBoolean('qr');
+    const widescreenArgument = interaction.options.getBoolean('widescreen');
 
     const isPublic = nowArgument !== null ? nowArgument : false;
-    // By default, we want to include QR codes.
-    const needsQr = qrArgument !== null ? qrArgument : true;
+    // By default, we want to include the slide.
+    const needsSlide = widescreenArgument !== null ? widescreenArgument : true;
 
     // Defer the reply ephemerally only if it's a private command call.
     await super.defer(interaction, !isPublic);
@@ -139,7 +139,7 @@ export default class Checkin extends Command {
         // as well as the Payload for when we have `checkin now`.
         //
         // Since this is private, we can list all of today's events.
-        const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsQr);
+        const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide);
         await author.send(privateMessage);
         await super.edit(interaction, {
           content: 'Check your DM.',
@@ -148,7 +148,7 @@ export default class Checkin extends Command {
       } else {
         // This is public, so we only want to give events that are live RIGHT now (so no one can
         // pre-emptively get checkin codes if they're left to be seen).
-        const publicMessage = await Checkin.getCheckinMessage(liveEvents, isPublic, needsQr);
+        const publicMessage = await Checkin.getCheckinMessage(liveEvents, isPublic, needsSlide);
         await super.edit(interaction, publicMessage);
       }
     } catch (e) {
@@ -196,37 +196,101 @@ export default class Checkin extends Command {
    * @param expressCheckinURL URL that the QR code links to.
    * @returns URL of the generated QR code.
    */
-  private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL) {
-    // Create the QR code. This library is very undocumented, so we'll make it simpler to read.
-    const eventQrCode = new QRCode({
-      // The text of the QR code we need to insert. This is just our express check-in URL.
-      text: expressCheckinURL.toString(),
-      // Make the QR code black and white.
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      // Maximum error-correction level to allow for maximum logo placement.
-      correctLevel: QRCode.CorrectLevel.H,
-      // Link to our logo. This HAS to be a white-background PNG. I also tilted it
-      // 45 degrees to make the QR code diamond-able(?)
-      logo: 'src/assets/acm-qr-logo.png',
-      logoBackgroundTransparent: false,
-      // Add white padding of 30px around the picture. Also add the name
-      // of the event to the image to differentiate between event QR codes
-      // (if multiple events in one day) and offset the title to fit in "quiet zone".
-      //
-      // Also trim title to about 35 characters so we can fit it in the QR code nicely.
-      quietZone: 40,
-      title: event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...'),
-      titleTop: -20,
-      // Add a subtitle for the literal check-in code as well, so you can read it
-      // if desired without scanning the QR code.
-      subTitle: `Check-in code: ${event.attendanceCode}`,
-      subTitleTop: -5,
-    });
+  private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL, needsSlide: boolean) {
+    // Doesn't need landscape QR slide. Return the QR code by itself
+    let qrCodeDataUrl;
+    if (needsSlide) {
+      const eventQrCode = QR.generateQR(expressCheckinURL.toString(), '', '');
+      qrCodeDataUrl = await this.createQRSlide(event, eventQrCode);
+    } else {
+      const eventQrCode = QR.generateQR(
+        expressCheckinURL.toString(),
+        event.title,
+        `Check-in code: ${event.attendanceCode}`
+      );
+      qrCodeDataUrl = await eventQrCode;
+    }
+
+    return qrCodeDataUrl;
+  }
+
+  /**
+   * Creates a slide with the given QR Code and returns its URL.
+   * @param event Portal Event to create the slide for.
+   * @param eventQrCode QR Code for the event.
+   * @returns URL of the generated slide.
+   */
+  private static async createQRSlide(event: PortalEvent, eventQrCode: string) {
+    /**
+     * Rescales the font; makes the font size smaller if the text is longer
+     * and bigger if the text is shorter.
+     * @param size Original font size before rescaling
+     */
+    const rescaleFont = (size: number, min: number, max: number) => {
+      // We want to limit how small or how big the font can get
+      let rescaledSize = size;
+      if (size > max) {
+        rescaledSize = max;
+      }
+      if (size < min) {
+        rescaledSize = min;
+      }
+      return (-2 * rescaledSize) / 3 + 65;
+    };
+
+    // Creating slide with Canvas
+    // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
+    const slide = createCanvas(1920, 1080);
+    const context = slide.getContext('2d');
+    context.fillRect(0, 0, 1920, 1080);
+
+    // Draw background
+    const background = await loadImage('./src/assets/qr-slide-background.png');
+    context.drawImage(background, 0, 0, 1920, 1080);
+
+    // Draw QR code
+    // Tilting the slide 45 degrees before adding QR code
+    const angleInRadians = Math.PI / 4;
+    context.rotate(angleInRadians);
+    const qrImg = await loadImage(await eventQrCode);
+    context.drawImage(qrImg, 375, -325, 600, 600);
+    context.rotate(-1 * angleInRadians);
+
+    // Event title
+    const title =
+      event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
+    const titleSize = rescaleFont(title.length, 8, 70);
+    context.textAlign = 'center';
+    context.font = `bold ${titleSize}pt 'DM Sans'`;
+    context.fillText(title, 1400, 550);
+
+    // Everything starting here has a shadow
+    context.shadowColor = '#00000040';
+    context.shadowBlur = 5;
+    context.shadowOffsetY = 3.61;
+
+    // Code
+    const checkinCode = event.attendanceCode;
+    const checkinSize = rescaleFont(checkinCode.length, 30, 70);
+    context.fillStyle = '#ffffff';
+    context.font = `bold ${checkinSize}pt 'DM Sans'`;
+    const textMetrics = context.measureText(checkinCode);
+    let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
+    // Add 120 for padding on left and right side
+    codeWidth += 120;
+    context.fillStyle = '#70BAFF';
+    context.beginPath();
+    // roundRect parameters: x, y, width, height, radius
+    context.roundRect(1400 - codeWidth / 2, 620, codeWidth, 136, 20);
+    context.fill();
+    context.shadowOffsetY = 6.62;
+    context.font = `bold ${checkinSize}pt 'DM Sans'`;
+    context.fillStyle = '#fff';
+    context.fillText(checkinCode, 1400, 710);
 
     // Get the Data URL of the image (base-64 encoded string of image).
     // Easier to attach than saving files.
-    const qrCodeDataUrl = await eventQrCode.toDataURL();
+    const qrCodeDataUrl = await slide.toDataURL();
     return qrCodeDataUrl;
   }
 
@@ -240,7 +304,7 @@ export default class Checkin extends Command {
    * - Attachment of event QR code with title if necessary.
    *
    * @param events The events to generate a Checkin Code Embed for.
-   * @param needsQr If true, QR codes are generated for each event.
+   * @param needsSlide If true, QR codes are generated for each event.
    * @private
    */
   // No method headers should be split between two lines due to length.
@@ -249,7 +313,7 @@ export default class Checkin extends Command {
   private static async getCheckinMessage(
     events: PortalEvent[],
     isPublic: boolean,
-    needsQr: boolean
+    needsSlide: boolean
   ): Promise<InteractionPayload> {
     // This method became very complicated very quickly, so we'll break this down.
     // Create arrays to store our payload contents temporarily. We'll put this in our embed
@@ -276,20 +340,17 @@ export default class Checkin extends Command {
         // Add a newline to delimit the next event.
         description.push('\n');
 
-        // If we have to also add QR codes to the embed...
-        if (needsQr) {
-          try {
-            const qrCodeDataUrl = await this.generateQRCodeURL(event, expressCheckinURL);
-            // Do some Discord.js shenanigans to generate an attachment from the image.
-            // Apparently, the Data URL MIME type of an image needs to be removed before given to
-            // Discord.js. Probably because the base64 encode is enough,
-            // but it was confusing the first time around.
-            const qrCodeBuffer: Buffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
-            const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
-            qrCodes.push(qrCodeAttachment);
-          } catch (error) {
-            Logger.error(error);
-          }
+        try {
+          const qrCodeDataUrl = await this.generateQRCodeURL(event, expressCheckinURL, needsSlide);
+          // Do some Discord.js shenanigans to generate an attachment from the image.
+          // Apparently, the Data URL MIME type of an image needs to be removed before given to
+          // Discord.js. Probably because the base64 encode is enough,
+          // but it was confusing the first time around.
+          const qrCodeBuffer: Buffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
+          const qrCodeAttachment = new MessageAttachment(qrCodeBuffer, `checkin-${event.attendanceCode}.png`);
+          qrCodes.push(qrCodeAttachment);
+        } catch (error) {
+          Logger.error(error);
         }
       })
     );
