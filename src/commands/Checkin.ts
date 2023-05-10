@@ -3,7 +3,7 @@ import got from 'got';
 import { DateTime, Interval } from 'luxon';
 import { v4 as newUUID } from 'uuid';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage, registerFont } from 'canvas';
 import { BotClient, InteractionPayload, PortalEvent, UUIDv4 } from '../types';
 import Command from '../Command';
 import Logger from '../utils/Logger';
@@ -256,24 +256,32 @@ export default class Checkin extends Command {
     context.drawImage(qrImg, 375, -325, 600, 600);
     context.rotate(-1 * angleInRadians);
 
+    // Importing DM Sans as our font
+    registerFont('./src/assets/DMSans-Bold.ttf', { family: 'DM Sans' });
+
+    // Everything starting here has a shadow
+    context.shadowColor = '#00000040';
+    context.shadowBlur = 4;
+    context.shadowOffsetY = 4;
+
     // Event title
     const title =
       event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
     const titleSize = rescaleFont(title.length, 8, 70);
     context.textAlign = 'center';
-    context.font = `bold ${titleSize}pt 'DM Sans'`;
+    context.font = `${titleSize}pt 'DM Sans'`;
     context.fillText(title, 1400, 550);
 
     // Everything starting here has a shadow
     context.shadowColor = '#00000040';
-    context.shadowBlur = 5;
-    context.shadowOffsetY = 3.61;
+    context.shadowBlur = 6.5;
+    context.shadowOffsetY = 6.5;
 
     // Code
     const checkinCode = event.attendanceCode;
     const checkinSize = rescaleFont(checkinCode.length, 30, 70);
     context.fillStyle = '#ffffff';
-    context.font = `bold ${checkinSize}pt 'DM Sans'`;
+    context.font = `${checkinSize}pt 'DM Sans'`;
     const textMetrics = context.measureText(checkinCode);
     let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
     // Add 120 for padding on left and right side
@@ -284,7 +292,7 @@ export default class Checkin extends Command {
     context.roundRect(1400 - codeWidth / 2, 620, codeWidth, 136, 20);
     context.fill();
     context.shadowOffsetY = 6.62;
-    context.font = `bold ${checkinSize}pt 'DM Sans'`;
+    context.font = `${checkinSize}pt 'DM Sans'`;
     context.fillStyle = '#fff';
     context.fillText(checkinCode, 1400, 710);
 
