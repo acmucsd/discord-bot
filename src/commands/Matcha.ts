@@ -11,6 +11,7 @@ import {
 import { DateTime } from 'luxon';
 import Command from '../Command';
 import { BotClient } from '../types';
+import Logger from '../utils/Logger';
 
 /**
  * Matches together users with a special role in groups of 2 or 3 in a Guild private thread.
@@ -137,6 +138,7 @@ export default class Matcha extends Command {
       await thread.send(
         `# 👋 Hello ${groupAsString} – time to meet up ‼️\nI'm here to help you :face_holding_back_tears: :index_pointing_at_the_viewer: get to know your teammates 🤩 by pairing everyone up every week 📆. Why don't you all pick a time ⏰ to meet up and get 🍵 🍣 🧋?`
       );
+      Logger.info(`/matcha - Matched ${memberTagsAsString}`);
       // Wait 200 ms before executing the next set of memberPairings.
       await setTimeout(() => {}, 200);
     }
@@ -184,12 +186,10 @@ export default class Matcha extends Command {
         }
         // Otherwise, the 'Confirm' button was called.
         this.lastRun = DateTime.now();
-        await buttonInteraction.deferReply();
-        await buttonInteraction.editReply({ content: 'Matching members!' });
         // Remove the button so they can't press it again.
-        await super.edit(interaction, { components: [] });
+        await super.edit(interaction, { content: 'Matching members!', components: [] });
         const numMembersMatched = await Matcha.createMatches(interaction, usersToBeMatched);
-        await buttonInteraction.editReply({
+        await interaction.followUp({
           content: `**/matcha** was called by ${interaction.user}: **${numMembersMatched}** members were successfully matched!`,
         });
       })
