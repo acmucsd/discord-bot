@@ -99,9 +99,6 @@ export default class Matcha extends Command {
    * @returns The total number of users who were matched.
    */
   private static async createMatches(interaction: CommandInteraction, users: GuildMember[]): Promise<Number> {
-    for (let i = 0; i < 90; i += 1) {
-      users.push(users[0]);
-    }
     const numMembersMatched = users.length;
     // Now, we make the pairings for Donuts members.
     const shuffledMembersList = Matcha.shuffle(users);
