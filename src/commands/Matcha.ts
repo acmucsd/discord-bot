@@ -11,6 +11,7 @@ import {
 import { DateTime } from 'luxon';
 import Command from '../Command';
 import { BotClient } from '../types';
+import Logger from '../utils/Logger';
 
 /**
  * Matches together users with a special role in groups of 2 or 3 in a Guild private thread.
@@ -137,6 +138,7 @@ export default class Matcha extends Command {
       await thread.send(
         `# 👋 Hello ${groupAsString} – time to meet up ‼️\nI'm here to help you :face_holding_back_tears: :index_pointing_at_the_viewer: get to know your teammates 🤩 by pairing everyone up every week 📆. Why don't you all pick a time ⏰ to meet up and get 🍵 🍣 🧋?`
       );
+      Logger.info(`/matcha - Matched ${groupAsString}`);
       // Wait 200 ms before executing the next set of memberPairings.
       await setTimeout(() => {}, 200);
     }
