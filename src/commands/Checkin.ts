@@ -145,6 +145,7 @@ export default class Checkin extends Command {
           content: 'Check your DM.',
           ephemeral: true,
         });
+        await interaction.followUp(`**/checkin** was used by ${interaction.user}`);
       } else {
         // This is public, so we only want to give events that are live RIGHT now (so no one can
         // pre-emptively get checkin codes if they're left to be seen).
@@ -238,6 +239,9 @@ export default class Checkin extends Command {
       return (-2 * rescaledSize) / 3 + 65;
     };
 
+    // Importing DM Sans as our font
+    registerFont('./src/assets/DMSans-Bold.ttf', { family: 'DM Sans' });
+
     // Creating slide with Canvas
     // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
     const slide = createCanvas(1920, 1080);
@@ -255,9 +259,6 @@ export default class Checkin extends Command {
     const qrImg = await loadImage(await eventQrCode);
     context.drawImage(qrImg, 375, -325, 600, 600);
     context.rotate(-1 * angleInRadians);
-
-    // Importing DM Sans as our font
-    registerFont('./src/assets/DMSans-Bold.ttf', { family: 'DM Sans' });
 
     // Everything starting here has a shadow
     context.shadowColor = '#00000040';
