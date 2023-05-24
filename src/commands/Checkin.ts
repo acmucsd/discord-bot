@@ -145,7 +145,7 @@ export default class Checkin extends Command {
           content: 'Check your DM.',
           ephemeral: true,
         });
-        await interaction.followUp(`**/checkin** was used by ${interaction.user}`);
+        await interaction.followUp(`**/checkin** was used privately by ${interaction.user}!`);
       } else {
         // This is public, so we only want to give events that are live RIGHT now (so no one can
         // pre-emptively get checkin codes if they're left to be seen).
@@ -165,7 +165,7 @@ export default class Checkin extends Command {
       });
       await super.edit(
         interaction,
-        `An error occurred when attempting to query the leaderboard data from the portal API. *(Error UUID: ${errorUUID})*`
+        `An error occurred when attempting to query the event data from the portal API. *(Error UUID: ${errorUUID})*`
       );
     }
   }
@@ -183,7 +183,6 @@ export default class Checkin extends Command {
         Authorization: `Bearer ${this.client.apiToken}`,
       },
     }).json()) as any;
-
     return portalAPIResponse.events.map((event: any) => ({
       ...event,
       start: DateTime.fromISO(event.start),
