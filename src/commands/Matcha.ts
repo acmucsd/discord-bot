@@ -132,9 +132,8 @@ export default class Matcha extends Command {
         type: 'GUILD_PRIVATE_THREAD',
         reason: `Matcha matching for ${memberTagsAsString}`,
       });
-      await Promise.all(group.map(member => thread.members.add(member)));
       await thread.send(
-        `# 👋 Hello ${groupAsString} – time to meet up ‼️\nI'm here to help you :face_holding_back_tears: :index_pointing_at_the_viewer: get to know your teammates 🤩 by pairing everyone up every week 📆. Why don't you all pick a time ⏰ to meet up and get 🍵 🍣 🧋?`
+        `## 👋 Hello ${groupAsString} – time to meet up ‼️\nI'm here to help you :face_holding_back_tears: :index_pointing_at_the_viewer: get to know your teammates 🤩 by pairing everyone up every week 📆. Why don't you all pick a time ⏰ to meet up and get 🍵 🍣 🧋?`
       );
       Logger.info(`/matcha - Matched ${memberTagsAsString}`);
       // Wait 200 ms before executing the next set of memberPairings.
