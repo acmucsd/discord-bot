@@ -109,7 +109,6 @@ export default class Matcha extends Command {
 
     const groupsize = interaction.options.getInteger('groupsize', true);
     Logger.error(`/matcha - ready to match ${shuffledMembersList}`);
-
     while (shuffledMembersList.length > 0) {
       let pairedMembers: GuildMember[];
       const extraMembers = shuffledMembersList.length % groupsize;
@@ -199,6 +198,17 @@ export default class Matcha extends Command {
           await super.edit(interaction, { content: '/matcha was canceled!', components: [] });
           return;
         }
+        const groupsize = interaction.options.getInteger('groupsize', true);
+
+        if (groupsize <= 1) {
+          await super.edit(interaction, {
+            content: 'You need to enter an integer greater than 1 otherwise your only friend will be yourself :angry:',
+            components: [],
+            ephemeral: true,
+          });
+          return;
+        }
+
         // Otherwise, the 'Confirm' button was called.
         this.lastRun = DateTime.now();
         // Remove the button so they can't press it again.
