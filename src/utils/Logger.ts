@@ -25,7 +25,7 @@ export default createLogger({
   format: json(),
   transports: [
     new Transports.Console({
-      level: 'debug',
+      level: 'error',
       format:
         process.env.NODE_ENV === 'development' ? combine(colorize(), consoleLogFormat) : combine(timestamp(), json()),
     }),

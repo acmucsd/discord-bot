@@ -24,6 +24,9 @@ export default class Matcha extends Command {
   constructor(client: BotClient) {
     const definition = new SlashCommandBuilder()
       .setName('matcha')
+      .addIntegerOption(option =>
+        option.setName('groupsize').setDescription('Set the minimum group size').setRequired(true)
+      )
       .setDescription(
         'Triggers matching for Matcha! Threads will be created in the channel where this command is called.'
       );
@@ -104,17 +107,32 @@ export default class Matcha extends Command {
     const shuffledMembersList = Matcha.shuffle(users);
     const memberPairings = [];
 
+    const groupsize = interaction.options.getInteger('groupsize', true);
+    Logger.error(`/matcha - ready to match ${shuffledMembersList}`);
+
     while (shuffledMembersList.length > 0) {
       let pairedMembers: GuildMember[];
-      if (shuffledMembersList.length % 2 === 1) {
-        // If there's an odd number of people, we start with a group of 3 to correct it.
-        pairedMembers = shuffledMembersList.splice(0, 3);
+      const extraMembers = shuffledMembersList.length % groupsize;
+      const numGroups = Math.floor(shuffledMembersList.length / groupsize);
+      Logger.error(`/matcha - numGroups ${numGroups}, extraMembers: ${extraMembers} groupsize ${groupsize}`);
+      if (extraMembers !== 0) {
+        // If length % size is off add people to the first group or first n groups
+        // for one group remaining add all extras
+        if (numGroups === 1) {
+          pairedMembers = shuffledMembersList.splice(0, shuffledMembersList.length);
+          Logger.error(`/matcha - pair ${pairedMembers}`);
+        }
+        // otherwise, disperse extra people across groupss
+        else {
+          const addedToGroup = Math.floor(extraMembers / numGroups);
+          pairedMembers = shuffledMembersList.splice(0, groupsize + addedToGroup);
+        }
       } else {
-        pairedMembers = shuffledMembersList.splice(0, 2);
+        pairedMembers = shuffledMembersList.splice(0, groupsize);
       }
       memberPairings.push(pairedMembers);
     }
-
+    Logger.error(`/matcha - matching worked? ${memberPairings}`);
     /**
      * To prevent ourselves from hitting Discord's API rate limit (50 requests/second),
      * we add a small delay between each creation of a group thread and execute them
