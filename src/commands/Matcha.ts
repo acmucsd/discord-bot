@@ -110,22 +110,7 @@ export default class Matcha extends Command {
     const groupsize = interaction.options.getInteger('groupsize', true);
     while (shuffledMembersList.length > 0) {
       let pairedMembers: GuildMember[];
-      const extraMembers = shuffledMembersList.length % groupsize;
-      const numGroups = Math.floor(shuffledMembersList.length / groupsize);
-      if (extraMembers !== 0) {
-        // If length % size is off add people to the first group or first n groups
-        // for one group remaining add all extras
-        if (numGroups === 1) {
-          pairedMembers = shuffledMembersList.splice(0, shuffledMembersList.length);
-        }
-        // otherwise, disperse extra people across groupss
-        else {
-          const addedToGroup = Math.floor(extraMembers / numGroups);
-          pairedMembers = shuffledMembersList.splice(0, groupsize + addedToGroup);
-        }
-      } else {
-        pairedMembers = shuffledMembersList.splice(0, groupsize);
-      }
+      pairedMembers = splitIntoGroups(shuffledMembersList, groupsize);
       memberPairings.push(pairedMembers);
     }
     /**
@@ -221,3 +206,22 @@ export default class Matcha extends Command {
       });
   }
 }
+function splitIntoGroups(shuffledMembersList: GuildMember[], groupsize: number): GuildMember[] {
+  const extraMembers = shuffledMembersList.length % groupsize;
+      const numGroups = Math.floor(shuffledMembersList.length / groupsize);
+      if (extraMembers !== 0) {
+        // If length % size is off add people to the first group or first n groups
+        // for one group remaining add all extras
+        if (numGroups === 1) {
+          return shuffledMembersList.splice(0, shuffledMembersList.length);
+        }
+        // otherwise, disperse extra people across groupss
+        else {
+          const addedToGroup = Math.floor(extraMembers / numGroups);
+          return shuffledMembersList.splice(0, groupsize + addedToGroup);
+        }
+      } else {
+        return shuffledMembersList.splice(0, groupsize);
+      }
+}
+
