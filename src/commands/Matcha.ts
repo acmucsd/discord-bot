@@ -71,11 +71,27 @@ export default class Matcha extends Command {
     return shuffledArray;
   }
 
+  private static splitIntoGroups(shuffledMembersList: GuildMember[], groupsize: number): GuildMember[] {
+    const extraMembers = shuffledMembersList.length % groupsize;
+    const numGroups = Math.floor(shuffledMembersList.length / groupsize);
+    if (extraMembers !== 0) {
+      // If length % size is off add people to the first group or first n groups
+      // for one group remaining add all extras
+      if (numGroups === 1) {
+        return shuffledMembersList.splice(0, shuffledMembersList.length);
+      }
+      // otherwise, disperse extra people across groupss
+      const addedToGroup = Math.floor(extraMembers / numGroups);
+      return shuffledMembersList.splice(0, groupsize + addedToGroup);
+    }
+    return shuffledMembersList.splice(0, groupsize);
+  }
   /**
    * Gets all users with the given role in the current discord server where this command was called.
    * @param interaction The original CommandInteraction from calling the /matcha command.
    * @returns A list of server users who have the specified 'match' role.
    */
+
   private async getRoleUsers(interaction: CommandInteraction): Promise<GuildMember[]> {
     // Not all members will be stored in the role cache initially, so fetching
     // all guild members in the server will populate them in the role cache for our use.
@@ -109,8 +125,7 @@ export default class Matcha extends Command {
 
     const groupsize = interaction.options.getInteger('groupsize', true);
     while (shuffledMembersList.length > 0) {
-      let pairedMembers: GuildMember[];
-      pairedMembers = splitIntoGroups(shuffledMembersList, groupsize);
+      const pairedMembers: GuildMember[] = Matcha.splitIntoGroups(shuffledMembersList, groupsize);
       memberPairings.push(pairedMembers);
     }
     /**
@@ -183,7 +198,8 @@ export default class Matcha extends Command {
 
         if (groupsize <= 1) {
           await super.edit(interaction, {
-            content: '**/matcha** needs a group size greater than 1! Otherwise, your only friend will be yourself! :rage:',
+            content:
+              '**/matcha** needs a group size greater than 1! Otherwise, your only friend will be yourself! :rage:',
             components: [],
             ephemeral: true,
           });
@@ -206,22 +222,3 @@ export default class Matcha extends Command {
       });
   }
 }
-function splitIntoGroups(shuffledMembersList: GuildMember[], groupsize: number): GuildMember[] {
-  const extraMembers = shuffledMembersList.length % groupsize;
-      const numGroups = Math.floor(shuffledMembersList.length / groupsize);
-      if (extraMembers !== 0) {
-        // If length % size is off add people to the first group or first n groups
-        // for one group remaining add all extras
-        if (numGroups === 1) {
-          return shuffledMembersList.splice(0, shuffledMembersList.length);
-        }
-        // otherwise, disperse extra people across groupss
-        else {
-          const addedToGroup = Math.floor(extraMembers / numGroups);
-          return shuffledMembersList.splice(0, groupsize + addedToGroup);
-        }
-      } else {
-        return shuffledMembersList.splice(0, groupsize);
-      }
-}
-
