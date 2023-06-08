@@ -108,18 +108,15 @@ export default class Matcha extends Command {
     const memberPairings = [];
 
     const groupsize = interaction.options.getInteger('groupsize', true);
-    Logger.error(`/matcha - ready to match ${shuffledMembersList}`);
     while (shuffledMembersList.length > 0) {
       let pairedMembers: GuildMember[];
       const extraMembers = shuffledMembersList.length % groupsize;
       const numGroups = Math.floor(shuffledMembersList.length / groupsize);
-      Logger.error(`/matcha - numGroups ${numGroups}, extraMembers: ${extraMembers} groupsize ${groupsize}`);
       if (extraMembers !== 0) {
         // If length % size is off add people to the first group or first n groups
         // for one group remaining add all extras
         if (numGroups === 1) {
           pairedMembers = shuffledMembersList.splice(0, shuffledMembersList.length);
-          Logger.error(`/matcha - pair ${pairedMembers}`);
         }
         // otherwise, disperse extra people across groupss
         else {
@@ -131,7 +128,6 @@ export default class Matcha extends Command {
       }
       memberPairings.push(pairedMembers);
     }
-    Logger.error(`/matcha - matching worked? ${memberPairings}`);
     /**
      * To prevent ourselves from hitting Discord's API rate limit (50 requests/second),
      * we add a small delay between each creation of a group thread and execute them
@@ -202,7 +198,7 @@ export default class Matcha extends Command {
 
         if (groupsize <= 1) {
           await super.edit(interaction, {
-            content: 'You need to enter an integer greater than 1 otherwise your only friend will be yourself :angry:',
+            content: '**/matcha** needs a group size greater than 1! Otherwise, your only friend will be yourself! :rage:',
             components: [],
             ephemeral: true,
           });
