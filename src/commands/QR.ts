@@ -19,7 +19,7 @@ export default class QR extends Command {
       .addStringOption(option =>
         option
           .setName('title')
-          .setDescription('The title of the QR. If empty, will use URL of QR code as title.')
+          .setDescription('The title of the QR. If not specified, will be blank.')
           .setRequired(false)
       )
       .setDescription('Generates a QR code with the provided text in it. Includes ACM logo!');
@@ -83,7 +83,7 @@ export default class QR extends Command {
     //
     // See Checkin.ts on how QR code arguments work.
     //
-    const qrCode = QR.generateQR(content, titleArgument || content, '');
+    const qrCode = QR.generateQR(content, titleArgument || '', '');
 
     // Make the Discord attachment for the QR code.
     const qrCodeDataUrl = await qrCode;
