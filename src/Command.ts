@@ -62,9 +62,10 @@ export default abstract class Command {
     if (!memberRoles) {
       return false;
     }
-    const validRole = (role: string) => role.toLowerCase().includes('staff')
-    || role.toLowerCase().includes('board')
-    || role.toLowerCase().includes('members at large');
+    const validRole = (role: string) =>
+      role.toLowerCase().includes('staff') ||
+      role.toLowerCase().includes('board') ||
+      role.toLowerCase().includes('members at large');
 
     const isBoard = Array.isArray(memberRoles)
       ? memberRoles.some(role => validRole(role))
