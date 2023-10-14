@@ -1,3 +1,4 @@
+import { GatewayIntentBits } from 'discord-api-types';
 import { BotSettings } from '../types';
 
 export default {
@@ -9,14 +10,13 @@ export default {
   clientID: '',
   clientOptions: {
     intents: [
-      'GUILDS',
-      'GUILD_INTEGRATIONS',
-      'GUILD_WEBHOOKS',
-      'GUILD_MESSAGES',
-      'GUILD_MEMBERS',
-      'DIRECT_MESSAGES',
-      'GUILD_MESSAGE_REACTIONS',
-      'DIRECT_MESSAGE_REACTIONS',
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildIntegrations,
+      GatewayIntentBits.GuildWebhooks,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.DirectMessages,
+      GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.DirectMessageReactions,
     ],
   },
   portalAPI: {

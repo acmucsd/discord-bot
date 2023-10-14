@@ -6,6 +6,7 @@ import Command from './Command';
 import ActionManager from './managers/ActionManager';
 import configuration from './config/config';
 import PortalAPIManager from './managers/PortalAPIManager';
+import { GatewayIntentBits } from 'discord-api-types';
 
 /**
  * The class representing the Discord bot.
@@ -45,14 +46,13 @@ export default class Client extends DiscordClient implements BotClient {
     super(
       configuration.clientOptions || {
         intents: [
-          'GUILDS',
-          'GUILD_INTEGRATIONS',
-          'GUILD_WEBHOOKS',
-          'GUILD_MESSAGES',
-          'GUILD_MEMBERS',
-          'DIRECT_MESSAGES',
-          'GUILD_MESSAGE_REACTIONS',
-          'DIRECT_MESSAGE_REACTIONS',
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildIntegrations,
+          GatewayIntentBits.GuildWebhooks,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.DirectMessages,
+          GatewayIntentBits.GuildMessageReactions,
+          GatewayIntentBits.DirectMessageReactions,
         ],
       }
     );
