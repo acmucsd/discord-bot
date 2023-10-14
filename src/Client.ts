@@ -1,12 +1,12 @@
 import { Collection, Client as DiscordClient } from 'discord.js';
 import { Service } from 'typedi';
+import { GatewayIntentBits } from 'discord-api-types';
 import Logger from './utils/Logger';
 import { BotSettings, BotClient, BotInitializationError } from './types';
 import Command from './Command';
 import ActionManager from './managers/ActionManager';
 import configuration from './config/config';
 import PortalAPIManager from './managers/PortalAPIManager';
-import { GatewayIntentBits } from 'discord-api-types';
 
 /**
  * The class representing the Discord bot.
