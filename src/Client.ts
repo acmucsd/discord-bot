@@ -1,6 +1,5 @@
 import { Collection, Client as DiscordClient } from 'discord.js';
 import { Service } from 'typedi';
-import { GatewayIntentBits } from 'discord-api-types';
 import Logger from './utils/Logger';
 import { BotSettings, BotClient, BotInitializationError } from './types';
 import Command from './Command';
@@ -46,13 +45,14 @@ export default class Client extends DiscordClient implements BotClient {
     super(
       configuration.clientOptions || {
         intents: [
-          GatewayIntentBits.Guilds,
-          GatewayIntentBits.GuildIntegrations,
-          GatewayIntentBits.GuildWebhooks,
-          GatewayIntentBits.GuildMessages,
-          GatewayIntentBits.DirectMessages,
-          GatewayIntentBits.GuildMessageReactions,
-          GatewayIntentBits.DirectMessageReactions,
+          'GUILDS',
+          'GUILD_INTEGRATIONS',
+          'GUILD_WEBHOOKS',
+          'GUILD_MESSAGES',
+          'GUILD_MEMBERS',
+          'DIRECT_MESSAGES',
+          'GUILD_MESSAGE_REACTIONS',
+          'DIRECT_MESSAGE_REACTIONS',
         ],
       }
     );
