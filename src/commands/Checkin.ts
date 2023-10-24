@@ -10,11 +10,11 @@ import Logger from '../utils/Logger';
 import QR from './QR';
 
 /**
- * This Command DM's the caller the checkin code and Express Checkin link for any events
- * in today's timeframe. Optional argument `now` makes the embed with the checkin codes
- * be returned in the same chat as the Command message, but only for currently running events.
- * Argument 'widescreen' allows users to choose if they want a QR code by itself (false) or
- * the widescreen slide QR (true).
+ * This Command DM's the caller the checkin code and Express Checkin link for any current and
+ * upcoming events in today's timeframe. Optional argument `public` makes the embed with the
+ * checkin codes be returned in the same chat as the Command message instead of DMs. Optional
+ * argument 'widescreen' allows users to choose if they want a QR code by itself (false) or
+ * the widescreen slide QR (true). 'widescreen' is true by default.
  */
 export default class Checkin extends Command {
   constructor(client: BotClient) {
@@ -22,7 +22,7 @@ export default class Checkin extends Command {
       .setName('checkin')
       .addBooleanOption(option =>
         option
-          .setName('now')
+          .setName('public')
           .setDescription('If true, send public embed of checking code for live events!')
           .setRequired(false)
       )
@@ -40,7 +40,7 @@ export default class Checkin extends Command {
         boardRequired: true,
         enabled: true,
         description:
-          "Sends a private message with all check-in codes from today's events. Calling with `now` argument sends public embed of checkin code if any events are now live!",
+          "Sends a private message with all check-in codes from today's events. Calling with `public` argument sends public embed of checkin code in the current channel instead of via DM.",
         category: 'Utility',
         usage: client.settings.prefix.concat('checkin [now]'),
         requiredPermissions: ['SEND_MESSAGES'],
@@ -66,10 +66,11 @@ export default class Checkin extends Command {
    */
   public async run(interaction: CommandInteraction): Promise<void> {
     // Get arguments. Get rid of the null types by checking them.
-    const nowArgument = interaction.options.getBoolean('now');
+    const publicArgument = interaction.options.getBoolean('public');
     const widescreenArgument = interaction.options.getBoolean('widescreen');
 
-    const isPublic = nowArgument !== null ? nowArgument : false;
+    // By default, we want the QR code to be DMed to the user.
+    const isPublic = publicArgument !== null ? publicArgument : false;
     // By default, we want to include the slide.
     const needsSlide = widescreenArgument !== null ? widescreenArgument : true;
 
@@ -83,12 +84,7 @@ export default class Checkin extends Command {
       // Oh, boy, here come more dates and times to check.
       // Luxon makes it much nicer, however.
       //
-      // We need two sets of arrays for "checkin":
-      // - all events that have a start time within today's timeframe
-      // - all events that are live RIGHT NOW
-      //
-      // The first set is useful for us to prepare a checkin code beforehand, while the second set
-      // enables the functionality for `checkin now`. We'll start with the first set.
+      // We need an array to store all events that have a start time within today's timeframe.
       const todayEvents = futureEvents.filter(event => {
         // get today's midnight
         const midnightToday = DateTime.now().set({
@@ -112,22 +108,13 @@ export default class Checkin extends Command {
         return Interval.fromDateTimes(midnightToday, midnightTomorrow).contains(event.start);
       });
 
-      // Check if current time in between event
-      const liveEvents = futureEvents.filter(event =>
-        Interval.fromDateTimes(event.start, event.end).contains(DateTime.now())
-      );
-
       // We'll make sure to check if the required set of events by
       // command arugments is empty; if it is, just return "No events today!"
-      if (!isPublic && todayEvents.length === 0) {
+      if (todayEvents.length === 0) {
         await super.edit(interaction, {
           content: 'No events today!',
           ephemeral: true,
         });
-        return;
-      }
-      if (isPublic && liveEvents.length === 0) {
-        await super.edit(interaction, 'No events right now!');
         return;
       }
 
@@ -135,10 +122,7 @@ export default class Checkin extends Command {
       // If we just had `checkin` in our call, no arguments...
       if (!isPublic) {
         const author = await this.client.users.fetch(interaction.member!.user.id);
-        // What we need now is to construct the Payload to send for `checkin` with no arguments,
-        // as well as the Payload for when we have `checkin now`.
-        //
-        // Since this is private, we can list all of today's events.
+        // What we need now is to construct the Payload to send for `checkin`.
         const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide);
         await author.send(privateMessage);
         await super.edit(interaction, {
@@ -147,9 +131,7 @@ export default class Checkin extends Command {
         });
         await interaction.followUp(`**/checkin** was used privately by ${interaction.user}!`);
       } else {
-        // This is public, so we only want to give events that are live RIGHT now (so no one can
-        // pre-emptively get checkin codes if they're left to be seen).
-        const publicMessage = await Checkin.getCheckinMessage(liveEvents, isPublic, needsSlide);
+        const publicMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide);
         await super.edit(interaction, publicMessage);
       }
     } catch (e) {
