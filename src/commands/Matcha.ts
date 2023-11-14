@@ -119,7 +119,7 @@ export default class Matcha extends Command {
    */
   private static async createMatches(interaction: CommandInteraction, users: GuildMember[]): Promise<Number> {
     const numMembersMatched = users.length;
-    // Now, we make the pairings for Donuts members.
+    // Now, we make the pairings for Matcha members.
     const shuffledMembersList = Matcha.shuffle(users);
     const memberPairings = [];
 
