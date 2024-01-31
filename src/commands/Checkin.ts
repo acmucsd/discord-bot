@@ -30,7 +30,7 @@ export default class Checkin extends Command {
         option.setName('widescreen').setDescription('Include a slide for the QR code.').setRequired(false)
       )
       .addStringOption(option =>
-        option.setName('date').setDescription('The date to check for events.').setRequired(false)
+        option.setName('date').setDescription('The date to check for events. Use MM/DD format.').setRequired(false)
       )
       .setDescription(
         "Sends a DM or embed with all check-in codes from today's events. Includes Express Checkin QR code!"
