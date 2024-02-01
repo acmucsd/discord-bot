@@ -77,6 +77,14 @@ export default class Checkin extends Command {
     const regexp = new RegExp('^(\\d{1,2})(/|-)(\\d{1,2})((/|-)(\\d{2}|\\d{4})){0,1}$', 'g');
     const dateMatches = regexp.exec(dateArgument!);
 
+    if (dateArgument !== null && dateMatches === null) {
+      await super.respond(interaction, {
+        content: 'Invalid date format. Please use MM/DD or MM-DD format.',
+        ephemeral: true,
+      });
+      return;
+    }
+
     const month = dateMatches?.[1] ? parseInt(dateMatches[1], 10) : DateTime.now().month;
     const day = dateMatches?.[3] ? parseInt(dateMatches[3], 10) : DateTime.now().day;
     const year = dateMatches?.[6] ? parseInt(dateMatches[6], 10) : DateTime.now().year;
