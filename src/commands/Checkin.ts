@@ -29,6 +29,9 @@ export default class Checkin extends Command {
       .addBooleanOption(option =>
         option.setName('widescreen').setDescription('Include a slide for the QR code.').setRequired(false)
       )
+      .addStringOption(option =>
+        option.setName('date').setDescription('The date to check for events. Use MM/DD format.').setRequired(false)
+      )
       .setDescription(
         "Sends a DM or embed with all check-in codes from today's events. Includes Express Checkin QR code!"
       );
@@ -68,6 +71,31 @@ export default class Checkin extends Command {
     // Get arguments. Get rid of the null types by checking them.
     const publicArgument = interaction.options.getBoolean('public');
     const widescreenArgument = interaction.options.getBoolean('widescreen');
+    const dateArgument = interaction.options.getString('date');
+
+    // Regex to match dates in the format of MM/DD(/YYYY) or MM-DD(-YYYY).
+    const regexp = new RegExp('^(\\d{1,2})(/|-)(\\d{1,2})((/|-)(\\d{2}|\\d{4})){0,1}$', 'g');
+    const dateMatches = regexp.exec(dateArgument!);
+
+    if (dateArgument !== null && dateMatches === null) {
+      await super.respond(interaction, {
+        content: 'Invalid date format. Please use MM/DD or MM-DD format.',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const month = dateMatches?.[1] ? parseInt(dateMatches[1], 10) : DateTime.now().month;
+    const day = dateMatches?.[3] ? parseInt(dateMatches[3], 10) : DateTime.now().day;
+    const year = dateMatches?.[6] ? parseInt(dateMatches[6], 10) : DateTime.now().year;
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      await super.respond(interaction, {
+        content: 'Invalid date. Please use a valid date.',
+        ephemeral: true,
+      });
+      return;
+    }
 
     // By default, we want the QR code to be DMed to the user.
     const isPublic = publicArgument !== null ? publicArgument : false;
@@ -87,22 +115,10 @@ export default class Checkin extends Command {
       // We need an array to store all events that have a start time within today's timeframe.
       const todayEvents = futureEvents.filter(event => {
         // get today's midnight
-        const midnightToday = DateTime.now().set({
-          hour: 0,
-          minute: 0,
-          second: 0,
-          millisecond: 0,
-        });
+        const midnightToday = DateTime.local(year, month, day, 0, 0, 0, 0);
 
         // get tomorrow's midnight
-        const midnightTomorrow = DateTime.now()
-          .set({
-            hour: 0,
-            minute: 0,
-            second: 0,
-            millisecond: 0,
-          })
-          .plus({ day: 1 });
+        const midnightTomorrow = midnightToday.plus({ day: 1 });
 
         // check if start time in between
         return Interval.fromDateTimes(midnightToday, midnightTomorrow).contains(event.start);
