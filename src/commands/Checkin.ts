@@ -89,6 +89,14 @@ export default class Checkin extends Command {
     const day = dateMatches?.[3] ? parseInt(dateMatches[3], 10) : DateTime.now().day;
     const year = dateMatches?.[6] ? parseInt(dateMatches[6], 10) : DateTime.now().year;
 
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      await super.respond(interaction, {
+        content: 'Invalid date. Please use a valid date.',
+        ephemeral: true,
+      });
+      return;
+    }
+
     // By default, we want the QR code to be DMed to the user.
     const isPublic = publicArgument !== null ? publicArgument : false;
     // By default, we want to include the slide.
