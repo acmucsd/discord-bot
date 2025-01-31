@@ -302,8 +302,7 @@ export default class Checkin extends Command {
       context.shadowOffsetY = 6.5;
 
       // Code
-      const checkinCode = 'hello';
-      // const checkinCode = event.attendanceCode;
+      const checkinCode = event.attendanceCode;
       const checkinSize = rescaleFont(checkinCode.length, 30, 70);
       context.fillStyle = '#ffffff';
       context.font = `${checkinSize}pt 'DM Sans'`;
