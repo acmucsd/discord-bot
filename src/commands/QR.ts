@@ -45,6 +45,7 @@ export default class QR extends Command {
    * @param data The content to put in the QR code.
    * @param title event name
    * @param subtitle event description
+   * @param org whether or not the ACM or AS relevant graphics should be used, default to ACM
    * @returns newly generated QR code url
    */
   public static generateQR(data: string, title: string, subtitle: string, org: string = 'acm'): string {
