@@ -9,8 +9,6 @@ import Command from '../Command';
 import Logger from '../utils/Logger';
 import QR from './QR';
 
-const AS_ATTENDANCE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc-akfqTNzrWUmOub_rMDj5wExBUDfakMXDbeGicOrpxBr6jg/viewform';
-
 /**
  * This Command DM's the caller the checkin code and Express Checkin link for any current and
  * upcoming events in today's timeframe. Optional argument `public` makes the embed with the
@@ -144,10 +142,11 @@ export default class Checkin extends Command {
 
       // Now we finally check the command argument.
       // If we just had `checkin` in our call, no arguments...
+      const asAttendanceForm = this.client.settings.asAttendanceForm;
       if (!isPublic) {
         const author = await this.client.users.fetch(interaction.member!.user.id);
         // What we need now is to construct the Payload to send for `checkin`.
-        const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide, needsASForm);
+        const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide, needsASForm, asAttendanceForm);
         await author.send(privateMessage);
         await super.edit(interaction, {
           content: 'Check your DM.',
@@ -155,7 +154,7 @@ export default class Checkin extends Command {
         });
         await interaction.followUp(`**/checkin** was used privately by ${interaction.user}!`);
       } else {
-        const publicMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide, needsASForm);
+        const publicMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide, needsASForm, asAttendanceForm);
         await super.edit(interaction, publicMessage);
       }
     } catch (e) {
@@ -184,7 +183,7 @@ export default class Checkin extends Command {
    */
   private async getFutureEvents(): Promise<PortalEvent[]> {
     try {
-      const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/event/future`, {
+      const portalAPIResponse = (await got(`https://testing.api.acmucsd.com/api/v2/event/future`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,
@@ -322,8 +321,7 @@ export default class Checkin extends Command {
 
       // Get the Data URL of the image (base-64 encoded string of image).
       // Easier to attach than saving files.
-      const qrCodeDataUrl = await slide.toDataURL();
-      return qrCodeDataUrl;
+      return await slide.toDataURL();
     }
     // Only ACM portal checkin needed
     else{
@@ -402,7 +400,8 @@ export default class Checkin extends Command {
     events: PortalEvent[],
     isPublic: boolean,
     needsSlide: boolean,
-    needsASForm: boolean
+    needsASForm: boolean,
+    asAttendanceForm: string,
   ): Promise<InteractionPayload> {
     // This method became very complicated very quickly, so we'll break this down.
     // Create arrays to store our payload contents temporarily. We'll put this in our embed
@@ -422,9 +421,7 @@ export default class Checkin extends Command {
         const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
         expressCheckinURL.searchParams.set('code', event.attendanceCode);
 
-        const asFormFilledURL = new URL(AS_ATTENDANCE_FORM_URL + 
-          '?entry.219446721=Association+for+Computing+Machinery+(ACM)+-+'+
-          event.title.replace(' ', '+'))
+        const asFormFilledURL = new URL(asAttendanceForm + event.title.replace(' ', '+'))
           // +'&entry.570464428='+event.foodItems.replace(' ', '+') — for food items
 
         // Add the Event's title and make it a hyperlink to the express check-in URL.

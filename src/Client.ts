@@ -89,6 +89,9 @@ export default class Client extends DiscordClient implements BotClient {
     if (!process.env.MATCH_ROLE_ID) {
       throw new BotInitializationError('Match Role ID');
     }
+    if (!process.env.AS_ATTENDANCE_FORM_URL) {
+      throw new BotInitializationError('AS Funded Event Attendance Form')
+    }
     this.settings.clientID = process.env.CLIENT_ID;
     this.settings.token = process.env.BOT_TOKEN;
     this.settings.prefix = process.env.BOT_PREFIX;
@@ -102,6 +105,7 @@ export default class Client extends DiscordClient implements BotClient {
     this.settings.portalAPI.password = process.env.MEMBERSHIP_PORTAL_API_PASSWORD;
     this.settings.discordGuildIDs = JSON.parse(process.env.DISCORD_GUILD_IDS) as Array<string>;
     this.settings.matchRoleID = process.env.MATCH_ROLE_ID;
+    this.settings.asAttendanceForm = process.env.AS_ATTENDANCE_FORM_URL;
     this.initialize().then();
   }
 
