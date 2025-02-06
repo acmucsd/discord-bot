@@ -142,11 +142,17 @@ export default class Checkin extends Command {
 
       // Now we finally check the command argument.
       // If we just had `checkin` in our call, no arguments...
-      const asAttendanceForm = this.client.settings.asAttendanceForm;
+      const { asAttendanceForm } = this.client.settings;
       if (!isPublic) {
         const author = await this.client.users.fetch(interaction.member!.user.id);
         // What we need now is to construct the Payload to send for `checkin`.
-        const privateMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide, needsASForm, asAttendanceForm);
+        const privateMessage = await Checkin.getCheckinMessage(
+          todayEvents,
+          isPublic,
+          needsSlide,
+          needsASForm,
+          asAttendanceForm
+        );
         await author.send(privateMessage);
         await super.edit(interaction, {
           content: 'Check your DM.',
@@ -154,7 +160,13 @@ export default class Checkin extends Command {
         });
         await interaction.followUp(`**/checkin** was used privately by ${interaction.user}!`);
       } else {
-        const publicMessage = await Checkin.getCheckinMessage(todayEvents, isPublic, needsSlide, needsASForm, asAttendanceForm);
+        const publicMessage = await Checkin.getCheckinMessage(
+          todayEvents,
+          isPublic,
+          needsSlide,
+          needsASForm,
+          asAttendanceForm
+        );
         await super.edit(interaction, publicMessage);
       }
     } catch (e) {
@@ -182,8 +194,7 @@ export default class Checkin extends Command {
    * @private
    */
   private async getFutureEvents(): Promise<PortalEvent[]> {
-    try {
-      const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/event/future`, {
+    const portalAPIResponse = (await got(`${this.client.settings.portalAPI.url}/event/future`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.client.apiToken}`,
@@ -194,10 +205,6 @@ export default class Checkin extends Command {
       start: DateTime.fromISO(event.start),
       end: DateTime.fromISO(event.end),
     }));
-    } catch (error) {
-      console.error('API request failed: ', error);
-      throw error;
-    }
   }
 
   /**
@@ -209,16 +216,21 @@ export default class Checkin extends Command {
    * @param needsSlide whether or not we're generating a widesgreen slide graphic
    * @returns URL of the generated QR code.
    */
-  private static async generateQRCodeURL(event: PortalEvent, expressCheckinURL: URL, needsASForm: boolean, asFormFilledURL: URL, needsSlide: boolean) {
+  private static async generateQRCodeURL(
+    event: PortalEvent,
+    expressCheckinURL: URL,
+    needsASForm: boolean,
+    asFormFilledURL: URL,
+    needsSlide: boolean
+  ) {
     // Doesn't need landscape QR slide. Return the QR code by itself
     let qrCodeDataUrl;
     if (needsSlide) {
       const eventQrCode = QR.generateQR(expressCheckinURL.toString(), '', '', 'acm');
-      if(needsASForm){
+      if (needsASForm) {
         const asFormQrCode = QR.generateQR(asFormFilledURL.toString(), '', '', 'as');
         qrCodeDataUrl = await this.createQRSlide(event, eventQrCode, asFormQrCode);
-      }
-      else{
+      } else {
         qrCodeDataUrl = await this.createQRSlide(event, eventQrCode);
       }
     } else {
@@ -232,6 +244,7 @@ export default class Checkin extends Command {
 
     return qrCodeDataUrl;
   }
+
   /**
    * Creates a slide with the given QR Code and returns its URL.
    * @param event Portal Event to create the slide for.
@@ -241,10 +254,10 @@ export default class Checkin extends Command {
    */
   private static async createQRSlide(event: PortalEvent, eventQrCode: string, asFormQrCode?: string) {
     /**
-       * Rescales the font; makes the font size smaller if the text is longer
-       * and bigger if the text is shorter.
-       * @param size Original font size before rescaling
-       */
+     * Rescales the font; makes the font size smaller if the text is longer
+     * and bigger if the text is shorter.
+     * @param size Original font size before rescaling
+     */
     const rescaleFont = (size: number, min: number, max: number) => {
       // We want to limit how small or how big the font can get
       let rescaledSize = size;
@@ -267,7 +280,7 @@ export default class Checkin extends Command {
     context.fillRect(0, 0, 1920, 1280);
 
     // AS attendance form and ACM portal checkin both needed — use dual layout
-    if(typeof asFormQrCode !== undefined && asFormQrCode){
+    if (typeof asFormQrCode !== 'undefined' && asFormQrCode) {
       // Draw background
       const background = await loadImage('./src/assets/dual-qr-slide-background.png');
       context.drawImage(background, 0, 0, 1920, 1280);
@@ -321,65 +334,64 @@ export default class Checkin extends Command {
 
       // Get the Data URL of the image (base-64 encoded string of image).
       // Easier to attach than saving files.
-      return await slide.toDataURL();
+      return slide.toDataURL();
     }
     // Only ACM portal checkin needed
-    else{
-      // Draw background
-      const background = await loadImage('./src/assets/qr-slide-background.png');
-      context.drawImage(background, 0, 0, 1920, 1080);
 
-      // Draw QR code
-      // Tilting the slide 45 degrees before adding QR code
-      const angleInRadians = Math.PI / 4;
-      context.rotate(angleInRadians);
-      const qrImg = await loadImage(await eventQrCode);
-      context.drawImage(qrImg, 375, -325, 600, 600);
-      context.rotate(-1 * angleInRadians);
+    // Draw background
+    const background = await loadImage('./src/assets/qr-slide-background.png');
+    context.drawImage(background, 0, 0, 1920, 1080);
 
-      // Everything starting here has a shadow
-      context.shadowColor = '#00000040';
-      context.shadowBlur = 4;
-      context.shadowOffsetY = 4;
+    // Draw QR code
+    // Tilting the slide 45 degrees before adding QR code
+    const angleInRadians = Math.PI / 4;
+    context.rotate(angleInRadians);
+    const qrImg = await loadImage(await eventQrCode);
+    context.drawImage(qrImg, 375, -325, 600, 600);
+    context.rotate(-1 * angleInRadians);
 
-      // Event title
-      const title =
-        event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
-      const titleSize = rescaleFont(title.length, 8, 70);
-      context.textAlign = 'center';
-      context.font = `${titleSize}pt 'DM Sans'`;
-      context.fillText(title, 1400, 550);
+    // Everything starting here has a shadow
+    context.shadowColor = '#00000040';
+    context.shadowBlur = 4;
+    context.shadowOffsetY = 4;
 
-      // Everything starting here has a shadow
-      context.shadowColor = '#00000040';
-      context.shadowBlur = 6.5;
-      context.shadowOffsetY = 6.5;
+    // Event title
+    const title =
+      event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
+    const titleSize = rescaleFont(title.length, 8, 70);
+    context.textAlign = 'center';
+    context.font = `${titleSize}pt 'DM Sans'`;
+    context.fillText(title, 1400, 550);
 
-      // Code
-      const checkinCode = event.attendanceCode;
-      const checkinSize = rescaleFont(checkinCode.length, 30, 70);
-      context.fillStyle = '#ffffff';
-      context.font = `${checkinSize}pt 'DM Sans'`;
-      const textMetrics = context.measureText(checkinCode);
-      let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
-      // Add 120 for padding on left and right side
-      codeWidth += 120;
-      context.fillStyle = '#70BAFF';
-      context.beginPath();
-      // roundRect parameters: x, y, width, height, radius
-      context.roundRect(1400 - codeWidth / 2, 620, codeWidth, 136, 20);
-      context.fill();
-      context.shadowOffsetY = 6.62;
-      context.font = `${checkinSize}pt 'DM Sans'`;
-      context.fillStyle = '#fff';
-      context.fillText(checkinCode, 1400, 710);
+    // Everything starting here has a shadow
+    context.shadowColor = '#00000040';
+    context.shadowBlur = 6.5;
+    context.shadowOffsetY = 6.5;
 
-      // Get the Data URL of the image (base-64 encoded string of image).
-      // Easier to attach than saving files.
-      const qrCodeDataUrl = await slide.toDataURL();
-      return qrCodeDataUrl;
-    }
+    // Code
+    const checkinCode = event.attendanceCode;
+    const checkinSize = rescaleFont(checkinCode.length, 30, 70);
+    context.fillStyle = '#ffffff';
+    context.font = `${checkinSize}pt 'DM Sans'`;
+    const textMetrics = context.measureText(checkinCode);
+    let codeWidth = textMetrics.actualBoundingBoxLeft + textMetrics.actualBoundingBoxRight;
+    // Add 120 for padding on left and right side
+    codeWidth += 120;
+    context.fillStyle = '#70BAFF';
+    context.beginPath();
+    // roundRect parameters: x, y, width, height, radius
+    context.roundRect(1400 - codeWidth / 2, 620, codeWidth, 136, 20);
+    context.fill();
+    context.shadowOffsetY = 6.62;
+    context.font = `${checkinSize}pt 'DM Sans'`;
+    context.fillStyle = '#fff';
+    context.fillText(checkinCode, 1400, 710);
+
+    // Get the Data URL of the image (base-64 encoded string of image).
+    // Easier to attach than saving files.
+    return slide.toDataURL();
   }
+
   /**
    * Generate the payload for a Checkin Code Embed with the provided list of PortalEvents,
    * adding QR code attachments if necessary.
@@ -401,7 +413,7 @@ export default class Checkin extends Command {
     isPublic: boolean,
     needsSlide: boolean,
     needsASForm: boolean,
-    asAttendanceForm: string,
+    asAttendanceForm: string
   ): Promise<InteractionPayload> {
     // This method became very complicated very quickly, so we'll break this down.
     // Create arrays to store our payload contents temporarily. We'll put this in our embed
@@ -421,8 +433,8 @@ export default class Checkin extends Command {
         const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
         expressCheckinURL.searchParams.set('code', event.attendanceCode);
 
-        const asFormFilledURL = new URL(asAttendanceForm + event.title.replace(' ', '+'))
-          // +'&entry.570464428='+event.foodItems.replace(' ', '+') — for food items
+        const asFormFilledURL = new URL(asAttendanceForm + event.title.replace(' ', '+'));
+        // +'&entry.570464428='+event.foodItems.replace(' ', '+') — for food items
 
         // Add the Event's title and make it a hyperlink to the express check-in URL.
         description.push(`*[${event.title}](${expressCheckinURL})*`);
@@ -432,7 +444,13 @@ export default class Checkin extends Command {
         description.push('\n');
 
         try {
-          const qrCodeDataUrl = await this.generateQRCodeURL(event, expressCheckinURL, needsASForm, asFormFilledURL, needsSlide);
+          const qrCodeDataUrl = await this.generateQRCodeURL(
+            event,
+            expressCheckinURL,
+            needsASForm,
+            asFormFilledURL,
+            needsSlide
+          );
           // Do some Discord.js shenanigans to generate an attachment from the image.
           // Apparently, the Data URL MIME type of an image needs to be removed before given to
           // Discord.js. Probably because the base64 encode is enough,
