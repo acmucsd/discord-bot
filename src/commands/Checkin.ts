@@ -273,14 +273,14 @@ export default class Checkin extends Command {
     // Importing DM Sans as our font
     registerFont('./src/assets/DMSans-Bold.ttf', { family: 'DM Sans' });
 
-    // Creating slide with Canvas
-    // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
-    const slide = createCanvas(1920, 1280);
-    const context = slide.getContext('2d');
-    context.fillRect(0, 0, 1920, 1280);
-
     // AS attendance form and ACM portal checkin both needed — use dual layout
     if (typeof asFormQrCode !== 'undefined' && asFormQrCode) {
+      // Creating slide with Canvas
+      // Helpful resource: https://blog.logrocket.com/creating-saving-images-node-canvas/
+      const slide = createCanvas(1920, 1280);
+      const context = slide.getContext('2d');
+      context.fillRect(0, 0, 1920, 1280);
+
       // Draw background
       const background = await loadImage('./src/assets/dual-qr-slide-background.png');
       context.drawImage(background, 0, 0, 1920, 1280);
@@ -337,6 +337,10 @@ export default class Checkin extends Command {
       return slide.toDataURL();
     }
     // Only ACM portal checkin needed
+
+    const slide = createCanvas(1920, 1080);
+    const context = slide.getContext('2d');
+    context.fillRect(0, 0, 1920, 1080);
 
     // Draw background
     const background = await loadImage('./src/assets/qr-slide-background.png');
