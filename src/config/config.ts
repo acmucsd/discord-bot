@@ -41,4 +41,5 @@ export default {
   },
   discordGuildIDs: [],
   matchRoleID: '',
+  asAttendanceForm: '',
 } as BotSettings;
