@@ -280,7 +280,7 @@ export default class Checkin extends Command {
       const slide = createCanvas(1920, 1280);
       const context = slide.getContext('2d');
       context.fillRect(0, 0, 1920, 1280);
-      
+
       // Draw background
       const background = await loadImage('./src/assets/dual-qr-slide-background.png');
       context.drawImage(background, 0, 0, 1920, 1280);
