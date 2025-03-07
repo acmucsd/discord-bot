@@ -361,7 +361,7 @@ export default class Checkin extends Command {
 
     // Event title
     const title =
-      event.title.substring(0, 36) === event.title ? event.title : event.title.substring(0, 36).concat('...');
+      event.title.substring(0, 22) === event.title ? event.title : event.title.substring(0, 22).concat('...');
     const titleSize = rescaleFont(title.length, 8, 70);
     context.textAlign = 'center';
     context.font = `${titleSize}pt 'DM Sans'`;
