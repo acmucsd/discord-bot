@@ -140,6 +140,11 @@ export interface BotSettings {
    * ID for the role we use to match members in our /match command.
    */
   matchRoleID: string;
+
+  /**
+   * Link for the current AS attendance form
+   */
+  asAttendanceForm: string;
 }
 
 /**
