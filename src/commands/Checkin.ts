@@ -437,8 +437,9 @@ export default class Checkin extends Command {
         const expressCheckinURL = new URL('https://members.acmucsd.com/checkin');
         expressCheckinURL.searchParams.set('code', event.attendanceCode);
 
-        const asFormFilledURL = new URL(asAttendanceForm + event.title.replace(' ', '+'));
-        // +'&entry.570464428='+event.foodItems.replace(' ', '+') — for food items
+        const asFormFilledURL = new URL(asAttendanceForm
+          +'?entry.219446721='+encodeURIComponent(event.title)
+          +'&entry.570464428='+encodeURIComponent(event.foodItems));
 
         // Add the Event's title and make it a hyperlink to the express check-in URL.
         description.push(`*[${event.title}](${expressCheckinURL})*`);
