@@ -1,19 +1,52 @@
-FROM node:14-alpine AS builder
+FROM node:18-alpine AS builder
+
+# Needed for the canvas package binaries
+RUN apk add --no-cache \ 
+    python3 \
+    make \
+    g++ \
+    pkgconf \
+    pixman-dev \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev
+
 WORKDIR /usr/src/bot
+
 COPY package*.json ./
 RUN npm ci
+
 COPY tsconfig.json ./
 COPY src src
+
 RUN npm run build
 
-FROM node:14-alpine
+RUN npm prune --production
+
+
+FROM node:18-alpine
+
 ENV NODE_ENV=production
-RUN apk add --no-cache tini curl
+
+RUN apk add --no-cache \
+    tini \
+    curl \
+    cairo \
+    pango \
+    jpeg \
+    giflib \
+    pixman
+
 WORKDIR /usr/src/bot
-COPY package*.json ./
-RUN npm install
-COPY --from=builder /usr/src/bot/dist dist
-RUN chown -R node:node .
+
+COPY --from=builder /usr/src/bot/node_modules ./node_modules
+COPY --from=builder /usr/src/bot/package*.json ./
+COPY --from=builder /usr/src/bot/dist ./dist
+COPY --from=builder /usr/src/bot/src ./src
+
+RUN chown -R node:node /usr/src/bot
+
 USER node
-WORKDIR /usr/src/bot/dist
-CMD ["tini", "--", "node", "src/index.js"]
+
+CMD ["tini", "--", "node", "dist/src/index.js"]
