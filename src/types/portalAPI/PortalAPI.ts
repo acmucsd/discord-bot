@@ -113,4 +113,8 @@ export interface PortalEvent {
    * Bonus points awarded to any Staff members who check in to an Event.
    */
   staffPointBonus: number;
+  /**
+   * Food items of Event.
+   */
+  foodItems: string;
 }
